@@ -2,6 +2,7 @@
 #include <string>
 
 #include "compiler/compiler.hpp"
+#include "parser/parser.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -20,16 +21,7 @@ int main(int argc, char* argv[])
         file_path = argv[1];
     }
 
-    std::ifstream file(file_path);
-    file.close();
-
-    compiler_data compiler;
-    
-    compiler.instructions.push_back("moja_mala_nesi:100");
-
-    compiler.dump();
-
-    compiler.write_to_inst_bin();
+    test();
 
     return 0;
 }
