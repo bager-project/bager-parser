@@ -1,3 +1,3 @@
 bager-parser/
 src/deactivate/
-src/dxf/__pycache__/
+*/*/__pycache__/

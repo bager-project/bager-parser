@@ -6,16 +6,21 @@
 import sys
 
 from dxf.dxf import *
+from position.position import *
 
 if __name__ == "__main__":
-    path: str = ""
+    dxf_path: str = ""
+    position_path: str = ""
 
-    if len(sys.argv) < 2:
-        path = input("Enter .dxf file path: ")
+    if len(sys.argv) < 3:
+        dxf_path = input("Enter .dxf file path: ")
+        position_path = input("Enter POSITION.toml file path: ")
     
     else:
-        path = sys.argv[1]
+        dxf_path = sys.argv[1]
+        position_path = sys.argv[2]
 
     print("B.A.G.E.R. parser")
 
-    dxf = DXF(path)
+    position = Position(position_path)
+    dxf = DXF(dxf_path)
