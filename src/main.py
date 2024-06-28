@@ -3,6 +3,7 @@
 # LICENSE: 
 # DESCRIPTION: Entry file
 
+import colorama
 import sys
 
 from dxf.dxf import *
@@ -20,7 +21,7 @@ if __name__ == "__main__":
         dxf_path = sys.argv[1]
         position_path = sys.argv[2]
 
-    print("B.A.G.E.R. parser")
+    print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
 
     position = Position(position_path)
     dxf = DXF(dxf_path)
