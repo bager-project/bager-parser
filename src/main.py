@@ -24,4 +24,6 @@ if __name__ == "__main__":
     print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
 
     position = Position(position_path)
+
     dxf = DXF(dxf_path)
+    dxf.execute()

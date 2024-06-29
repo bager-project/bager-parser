@@ -11,6 +11,13 @@ B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an excavator featuring 
 - Make virtual environment - `python -m venv bager-parser`
 - Enter virtual environment - `source bager-parser/bin/activate`
     - If `source` is not found, install `virtualenv` pip package and run `virtualenv bager-parser/bin/activate`
-- Install [`colorama`](https://pypi.org/project/colorama/) package - `pip install colorama`
-- Install [`ezdxf`](https://pypi.org/project/ezdxf/) package - `pip install ezdxf`
+
+- Install following packages:
+    - [`colorama`](https://pypi.org/project/colorama/)
+    - [`ezdxf`](https://pypi.org/project/ezdxf/)
+    - [`matplotlib`](https://pypi.org/project/matplotlib/)
+    - [`numpy`](https://pypi.org/project/numpy/)
+    - [`shapely`](https://pypi.org/project/shapely/)
+
+    - *Just do `pip install [package]`*
 - Go to `src` folder and run `python main.py`
