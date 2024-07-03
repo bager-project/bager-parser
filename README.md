@@ -18,6 +18,7 @@ B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an excavator featuring 
     - [`matplotlib`](https://pypi.org/project/matplotlib/)
     - [`numpy`](https://pypi.org/project/numpy/)
     - [`shapely`](https://pypi.org/project/shapely/)
+    - [`toml`](https://pypi.org/project/toml/)
 
     - *Just do `pip install [package]`*
 - Go to `src` folder and run `python main.py`
