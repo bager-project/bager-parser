@@ -9,10 +9,12 @@ import numpy as np
 from shapely.geometry import LineString, Polygon
 from shapely.ops import split
 
+# DXF parser
 class DXF:
+
+    # Initialize all variables
     def __init__(self, path) -> None:
         self.path = path;
-        self.lines = []
     
         # Dictionary to store all elements
         self.elements = {
@@ -21,34 +23,35 @@ class DXF:
             "UNIMPLEMENTED": [],
         }
 
+        # Variable holding grid / divisions 
+        self.grid = None
+
+        # Variable holding polygon
+        self.polygon = None
+
         self.doc = ezdxf.readfile(path)
         self.modelspace = self.doc.modelspace()
 
+    # Run parser
     def execute(self) -> None:
         self.extract_entities()
 
         grid_size = 10
-        all_coords = []
 
-        # Create a polygon from the lines
-        polygon = self.create_polygon()
-        
-        # Create horizontal divisions
-        divisions = self.create_divisions(polygon, grid_size)
-        
-        # Plot the shape and the divisions
-        self.plot_shape_and_grid(polygon, divisions)
+        self.create_polygon()    
+        self.create_divisions(grid_size)
+        self.plot_shape_and_grid()
 
+    # Extract .dxf entities
     def extract_entities(self) -> None:
         # Extract different types of elements
         for entity in self.modelspace:
             match entity.dxftype():
                 case 'LINE':
-                    self.elements['LINES'].append(entity)
-
                     start_point = (entity.dxf.start.x, entity.dxf.start.y)
                     end_point = (entity.dxf.end.x, entity.dxf.end.y)
-                    self.lines.append(LineString([start_point, end_point]))
+
+                    self.elements['LINES'].append(LineString([start_point, end_point]))
 
                 case 'DIMENSION':
                     self.elements['DIMENSIONS'].append(entity)
@@ -56,15 +59,17 @@ class DXF:
                 case _:
                     self.elements['UNIMPLEMENTED'].append(entity)
 
-    def create_polygon(self) -> Polygon:
+    # Create polygon from extracted entities
+    def create_polygon(self) -> None:
         all_coords = []
-        for line in self.lines:
+        for line in self.elements['LINES']:
             all_coords.extend(line.coords)
 
-        return Polygon(all_coords)
+        self.polygon = Polygon(all_coords)
 
-    def create_divisions(self, polygon: Polygon, division_number):
-        min_x, min_y, max_x, max_y = polygon.bounds
+    # Divide polygon into smaller pieces
+    def create_divisions(self, division_number):
+        min_x, min_y, max_x, max_y = self.polygon.bounds
         y_points = np.arange(min_y, max_y, division_number)
         
         horizontal_lines = []
@@ -74,21 +79,22 @@ class DXF:
         
         clipped_lines = []
         for line in horizontal_lines:
-            clipped_line = polygon.intersection(line)
+            clipped_line = self.polygon.intersection(line)
             if not clipped_line.is_empty:
                 clipped_lines.append(clipped_line)
         
-        return clipped_lines
+        self.grid = clipped_lines
     
-    def plot_shape_and_grid(self, polygon, divisions):
+    # Plot divided polygon on screen
+    def plot_shape_and_grid(self) -> None:
         fig, ax = plt.subplots()
     
         # Plot the polygon
-        x, y = polygon.exterior.xy
+        x, y = self.polygon.exterior.xy
         ax.plot(x, y, color='black')
         
         # Plot the divisions
-        for division in divisions:
+        for division in self.grid:
             if isinstance(division, LineString):
                 x, y = division.xy
                 ax.plot(x, y, color='blue')
@@ -99,6 +105,7 @@ class DXF:
 
         plt.show()
 
+    # Print found entities
     def print_entities(self) -> None:
         # Extract different types of elements
         for element_type, entities in self.elements.items():

@@ -6,8 +6,8 @@
 import colorama
 import sys
 
-from dxf.dxf import *
-from position.position import *
+from parser.dxf import *
+from config.position import *
 
 if __name__ == "__main__":
     dxf_path: str = ""
