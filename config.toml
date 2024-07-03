@@ -1,0 +1,4 @@
+# General config file for project documentation parser
+
+dxf_path = "../square.dxf"
+position_path = "../POSITION.toml"

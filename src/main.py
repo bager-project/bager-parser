@@ -4,26 +4,25 @@
 # DESCRIPTION: Entry file
 
 import colorama
+import toml
 import sys
 
 from parser.dxf import *
 from config.position import *
 
 if __name__ == "__main__":
-    dxf_path: str = ""
-    position_path: str = ""
+    config_path: str = ""
 
-    if len(sys.argv) < 3:
-        dxf_path = input("Enter .dxf file path: ")
-        position_path = input("Enter POSITION.toml file path: ")
+    if len(sys.argv) < 2:
+        config_path = input("Enter config path: ")
     
     else:
-        dxf_path = sys.argv[1]
-        position_path = sys.argv[2]
+        config_path = sys.argv[1]
 
+    parsed_toml = toml.load(config_path)
     print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
 
-    position = Position(position_path)
+    position = Position(parsed_toml['position_path'])
 
-    dxf = DXF(dxf_path)
+    dxf = DXF(parsed_toml["dxf_path"])
     dxf.execute()
