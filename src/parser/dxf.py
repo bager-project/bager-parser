@@ -14,7 +14,7 @@ class DXF:
 
     # Initialize all variables
     def __init__(self, path) -> None:
-        self.path = path;
+        self.path = path
     
         # Dictionary to store all elements
         self.elements = {
