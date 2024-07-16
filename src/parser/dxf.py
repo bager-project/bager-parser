@@ -6,8 +6,8 @@
 import ezdxf
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from shapely.geometry import LineString, Polygon
-from shapely.ops import split
 
 # DXF parser
 class DXF:
@@ -28,6 +28,12 @@ class DXF:
 
         # Variable holding polygon
         self.polygon = None
+
+        if not os.path.exists(path):
+            print(f"File in path {path} does not exist!")
+            print("Exiting...")
+
+            exit(0)
 
         self.doc = ezdxf.readfile(path)
         self.modelspace = self.doc.modelspace()

@@ -4,8 +4,9 @@
 # DESCRIPTION: Entry file
 
 import colorama
-import toml
+import os
 import sys
+import toml
 
 from parser.dxf import *
 from config.position import *
@@ -18,6 +19,12 @@ if __name__ == "__main__":
     
     else:
         config_path = sys.argv[1]
+
+    if not os.path.exists(config_path):
+        print(f"File in path {config_path} not found!")
+        print("Exiting...")
+        
+        exit(0)
 
     parsed_toml = toml.load(config_path)
     print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
