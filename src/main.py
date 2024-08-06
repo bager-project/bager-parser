@@ -8,8 +8,9 @@ import os
 import sys
 import toml
 
-from parser.dxf import *
 from config.position import *
+from parser.dxf import *
+from tree.ast import *
 
 if __name__ == "__main__":
     config_path: str = ""

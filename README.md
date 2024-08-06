@@ -17,6 +17,7 @@ B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an excavator featuring 
     - [`ezdxf`](https://pypi.org/project/ezdxf/)
     - [`matplotlib`](https://pypi.org/project/matplotlib/)
     - [`numpy`](https://pypi.org/project/numpy/)
+    - [`PyQt6`](https://pypi.org/project/PyQt6/) *install this package if you get `FigureCanvasAgg is non-interactive, and thus cannot be shown` error*
     - [`shapely`](https://pypi.org/project/shapely/)
     - [`toml`](https://pypi.org/project/toml/)
 
