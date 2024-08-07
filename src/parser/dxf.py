@@ -19,6 +19,7 @@ class DXF:
         # Dictionary to store all elements
         self.elements = {
             'LINES': [],
+            'LWPOLYLINE': [],
             'DIMENSIONS': [],
             "UNIMPLEMENTED": [],
         }
@@ -44,7 +45,10 @@ class DXF:
 
         grid_size = 10
 
-        self.create_polygon()    
+        polygon_result:int = self.create_polygon()
+        if polygon_result != 0:
+            return
+
         self.create_divisions(grid_size)
         self.plot_shape_and_grid()
 
@@ -59,6 +63,9 @@ class DXF:
 
                     self.elements['LINES'].append(LineString([start_point, end_point]))
 
+                case 'LWPOLYLINE':
+                    self.elements['LWPOLYLINE'].append(entity)
+
                 case 'DIMENSION':
                     self.elements['DIMENSIONS'].append(entity)
 
@@ -66,12 +73,23 @@ class DXF:
                     self.elements['UNIMPLEMENTED'].append(entity)
 
     # Create polygon from extracted entities
-    def create_polygon(self) -> None:
+    def create_polygon(self) -> int:
         all_coords = []
-        for line in self.elements['LINES']:
-            all_coords.extend(line.coords)
+
+        if len(self.elements['LINES']):
+            for line in self.elements['LINES']:
+                all_coords.extend(line.coords)
+
+        elif len(self.elements['LWPOLYLINE']):
+            for polyline in self.elements['LWPOLYLINE']:
+                all_coords.extend(polyline.get_points('xy'))
+
+        else:
+            print("No element found to create polygon!")
+            return 1
 
         self.polygon = Polygon(all_coords)
+        return 0
 
     # Divide polygon into smaller pieces
     def create_divisions(self, division_number):
