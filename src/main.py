@@ -10,6 +10,7 @@ import toml
 
 from config.position import *
 from parser.dxf import *
+from parser.image import *
 from tree.ast import *
 
 if __name__ == "__main__":
@@ -32,5 +33,8 @@ if __name__ == "__main__":
 
     position = Position(parsed_toml['position_path'])
 
-    dxf = DXF(parsed_toml["dxf_path"])
-    dxf.execute()
+    # dxf = DXF(parsed_toml["dxf_path"])
+    # dxf.execute()
+
+    image = Image(parsed_toml["image_path"])
+    image.execute()

@@ -1,4 +1,6 @@
 # General config file for project documentation parser
 
-dxf_path = "../dxf/square_2.dxf"
+dxf_path = "../dxf/square_thick.dxf"
 position_path = "../POSITION.toml"
+
+image_path = "../square_thick.png"
