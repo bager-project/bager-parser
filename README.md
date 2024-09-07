@@ -7,39 +7,7 @@ Parser generates AST into binary file. Raspberry Pi Pico converts AST into actua
 B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an excavator featuring full project documentation parser. We are keen to keep human operators to oversee computers work. We are using Raspberry Pi Pico with C & C++ combination.
 
 ## TODO
-- [ ] Config
-  - [x] Technical drawing path
-  - [ ] Position file path
-
-- [ ] Parser
-  - [ ] DXF parser
-    - [ ] Extract entities
-      - [x] Line
-      - [x] Rectangle
-      - [ ] Circle
-      - [x] Dimension
-    
-    - [x] Divide area
-
-  - [ ] DWG parser
-    - [ ] Extract entities
-      - [ ] Line
-      - [ ] Rectangle
-      - [ ] Circle
-      - [ ] Dimension
-
-    - [ ] Divide area
-
-  - [ ] Image parser
-    - [ ] Extract entities
-      - [x] Line
-      - [ ] Rectangle
-      - [ ] Circle
-      - [ ] Dimension
-
-    - [x] Divide areas
-
-- [ ] AST
+- [TODO](https://github.com/ringwormGO-organization/bager-parser/blob/master/TODO.md)
 
 ## Run instructions
 - Install Python 3.10 or later
