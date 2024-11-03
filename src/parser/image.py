@@ -20,8 +20,48 @@ class Image:
 
         self.image = cv2.imread(path)
 
-        self.color_gradation = False
-        self.two_color_gradation = False
+        self._color_gradation = False
+        self._two_color_gradation = False
+
+    def color_gradation(self, line_length, min_length, max_length):
+        # Normalize the length to the range [0, 1]
+        norm_length = (line_length - min_length) / (max_length - min_length)
+
+        # Light red to Dark red gradient
+        red_intensity = int(139 + norm_length * (255 - 139))  # Darker red for thicker lines
+        color = (0, 0, red_intensity)  # BGR format: (Blue, Green, Red)
+
+        # Set line thickness based on normalized length (optional)
+        thickness = int(1 + norm_length * 5)  # Range from 1 to 5
+
+        return (color, thickness)
+    
+    def two_color_gradation(self, line_length, min_length, max_length):
+        # Normalize the length to the range [0, 1]
+        norm_length = (line_length - min_length) / (max_length - min_length)
+
+        # Green to Red gradient
+        # Green (0, 255, 0) -> Red (0, 0, 255)
+        red_value = int(norm_length * 255)   # Red increases as line gets thinner
+        green_value = int(255 - norm_length * 255)  # Green decreases as line gets thinner
+        color = (0, green_value, red_value)  # BGR format: Blue, Green, Red
+
+        # Set line thickness based on normalized length (optional)
+        thickness = int(1 + norm_length * 5)  # Range from 1 to 5
+
+        return (color, thickness)
+    
+    def no_gradation(self, line_length, length_threshold):
+        # Use two colors based on length threshold
+        if line_length >= length_threshold:
+            color = (0, 255, 0)  # Green for thicker lines
+            thickness = 4  # Thicker line
+
+        else:
+            color = (0, 0, 255)  # Red for thinner lines
+            thickness = 2  # Thinner lines
+
+        return (color, thickness)
 
     def execute(self) -> None:
         # Convert image to grayscale
@@ -57,34 +97,26 @@ class Image:
                 # Calculate the length of the line
                 line_length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
-                if self.color_gradation:
-                    # Normalize the length to the range [0, 1]
-                    norm_length = (line_length - min_length) / (max_length - min_length)
+                color = 0
+                thickness = 0
 
-                    if self.two_color_gradation:
-                        # Green to Red gradient
-                        # Green (0, 255, 0) -> Red (0, 0, 255)
-                        red_value = int(norm_length * 255)   # Red increases as line gets thinner
-                        green_value = int(255 - norm_length * 255)  # Green decreases as line gets thinner
-                        color = (0, green_value, red_value)  # BGR format: Blue, Green, Red
+                if self._color_gradation:
+                    if self._two_color_gradation:
+                        result = self.two_color_gradation(line_length, min_length, max_length)
+
+                        color = result[0]
+                        thickness = result[1]
 
                     else:
-                        # Light red to Dark red gradient
-                        red_intensity = int(139 + norm_length * (255 - 139))  # Darker red for thicker lines
-                        color = (0, 0, red_intensity)  # BGR format: (Blue, Green, Red)
+                        result = self.color_gradation(line_length, min_length, max_length)
 
-                    # Set line thickness based on normalized length (optional)
-                    thickness = int(1 + norm_length * 5)  # Range from 1 to 5
-
+                        color = result[0]
+                        thickness = result[1]
                 else:
-                    # Use two colors based on length threshold
-                    if line_length >= length_threshold:
-                        color = (0, 255, 0)  # Green for thicker lines
-                        thickness = 4  # Thicker line
+                    result = self.no_gradation(line_length, length_threshold)
 
-                    else:
-                        color = (0, 0, 255)  # Red for thinner lines
-                        thickness = 2  # Thinner line
+                    color = result[0]
+                    thickness = result[1]
 
                 # Draw the lines on the image
                 cv2.line(self.image, (x1, y1), (x2, y2), color, thickness)
