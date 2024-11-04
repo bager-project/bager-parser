@@ -9,8 +9,8 @@ import sys
 import toml
 
 from config.position import *
-from parser.dxf import *
-from parser.image import *
+from extracter.dxf import *
+from extracter.image import *
 from tree.ast import *
 
 if __name__ == "__main__":
@@ -31,10 +31,11 @@ if __name__ == "__main__":
     parsed_toml = toml.load(config_path)
     print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
 
-    position = Position(parsed_toml['position_path'])
+    position = Position(parsed_toml['paths']['position_path'])
+    if (parsed_toml['extracter']['type'] == "dxf"):
+        dxf = DXF(parsed_toml['paths']['dxf_path'])
+        dxf.execute()
 
-    # dxf = DXF(parsed_toml["dxf_path"])
-    # dxf.execute()
-
-    image = Image(parsed_toml["image_path"])
-    image.execute()
+    elif (parsed_toml["extracter"]['type'] == "image"):
+        image = Image(parsed_toml['paths']['image_path'])
+        image.execute()

@@ -1,7 +1,7 @@
 # AUTHOR Andrej Bartulin, EndermanPC
 # PROJECT: B.A.G.E.R. parser
 # LICENSE: 
-# DESCRIPTION: .dxf parser entry file
+# DESCRIPTION: .dxf extracter entry file
 
 import ezdxf
 import matplotlib.pyplot as plt
