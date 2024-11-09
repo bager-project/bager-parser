@@ -1,7 +1,7 @@
 # AUTHOR Andrej Bartulin
 # PROJECT: B.A.G.E.R. parser
 # LICENSE: 
-# DESCRIPTION: image extracter entry file
+# DESCRIPTION: image extractor entry file
 
 import os
 import cv2

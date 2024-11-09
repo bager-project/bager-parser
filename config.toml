@@ -5,5 +5,5 @@ dxf_path = "../dxf/square_thick.dxf"
 position_path = "../POSITION.toml"
 image_path = "../square_thick.png"
 
-[extracter]
+[extractor]
 type = "dxf"

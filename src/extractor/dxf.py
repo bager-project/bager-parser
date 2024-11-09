@@ -1,7 +1,7 @@
 # AUTHOR Andrej Bartulin, EndermanPC
 # PROJECT: B.A.G.E.R. parser
 # LICENSE: 
-# DESCRIPTION: .dxf extracter entry file
+# DESCRIPTION: .dxf extractor entry file
 
 import ezdxf
 import os
