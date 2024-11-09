@@ -11,6 +11,7 @@ import toml
 from config.position import *
 from extracter.dxf import *
 from extracter.image import *
+from separator.separator import *
 from tree.ast import *
 
 if __name__ == "__main__":
@@ -34,7 +35,9 @@ if __name__ == "__main__":
     position = Position(parsed_toml['paths']['position_path'])
     if (parsed_toml['extracter']['type'] == "dxf"):
         dxf = DXF(parsed_toml['paths']['dxf_path'])
-        dxf.execute()
+        
+        elements = dxf.get_elements()
+        separator = Separator(elements)
 
     elif (parsed_toml["extracter"]['type'] == "image"):
         image = Image(parsed_toml['paths']['image_path'])
