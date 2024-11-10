@@ -23,6 +23,12 @@ class Image:
         self._color_gradation = False
         self._two_color_gradation = False
 
+        self.elements = {
+            'LINES': [],
+            'LWPOLYLINE': [],
+            'POINTS': [],
+        }
+
     def color_gradation(self, line_length, min_length, max_length):
         # Normalize the length to the range [0, 1]
         norm_length = (line_length - min_length) / (max_length - min_length)
@@ -94,6 +100,9 @@ class Image:
                 # Extracted points
                 x1, y1, x2, y2 = points[0]
 
+                self.elements['POINTS'].append((x1, y1))
+                self.elements['POINTS'].append((x2, y2))
+
                 # Calculate the length of the line
                 line_length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
@@ -123,3 +132,6 @@ class Image:
 
         # Save the result image
         cv2.imwrite('detectedLines.png', self.image)
+
+    def get_elements(self):
+        return self.elements

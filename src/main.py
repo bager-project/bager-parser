@@ -42,3 +42,6 @@ if __name__ == "__main__":
     elif (parsed_toml["extractor"]['type'] == "image"):
         image = Image(parsed_toml['paths']['image_path'])
         image.execute()
+
+        elements = image.get_elements()
+        separator = Separator(elements)

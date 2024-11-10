@@ -111,7 +111,7 @@ $DISPSILH
   9
 $DIMSCALE
  40
-1
+2.5
   9
 $DIMASZ
  40
@@ -1111,9 +1111,9 @@ AcDbViewportTableRecord
  21
 1
  12
-95.4346832264698
+125.7500000000001
  22
-10.15262587515636
+25.50000000000002
  13
 0
  23
@@ -1139,7 +1139,7 @@ AcDbViewportTableRecord
  37
 0
  40
-152.9662298523559
+197.7500000000001
  41
 1.88748419721871
  42
@@ -2409,7 +2409,7 @@ Standard
 141
 0.09
 142
-0
+2.5
 143
 25.4
 144
@@ -2555,24 +2555,6 @@ AcDbBlockTableRecord
 281
     0
   0
-BLOCK_RECORD
-  5
-4D
-330
-1
-100
-AcDbSymbolTableRecord
-100
-AcDbBlockTableRecord
-  2
-*D1
- 70
-    0
-280
-    1
-281
-    0
-  0
 ENDTAB
   0
 ENDSEC
@@ -2657,307 +2639,15 @@ AcDbEntity
 100
 AcDbBlockEnd
   0
-BLOCK
-  5
-4E
-330
-4D
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockBegin
-  2
-*D1
- 70
-    1
- 10
-0
- 20
-0
-  3
-*D1
-  1
-
-  0
-LINE
-  5
-50
-100
-AcDbEntity
-  8
-0
-  6
-ByBlock
- 62
-    0
-370
-   -2
-100
-AcDbLine
- 10
-3.827021247335479e-17
- 20
--99.375
- 11
-6.888638245203862e-16
- 21
--88.75
-  0
-LINE
-  5
-51
-100
-AcDbEntity
-  8
-0
-  6
-ByBlock
- 62
-    0
-370
-   -2
-100
-AcDbLine
- 10
-100
- 20
--99.375
- 11
-100
- 21
--88.75
-  0
-LINE
-  5
-52
-100
-AcDbEntity
-  8
-0
-  6
-ByBlock
- 62
-    0
-370
-   -2
-100
-AcDbLine
- 10
-6.123233995736766e-16
- 20
--90
- 11
-100
- 21
--90
-  0
-MTEXT
-  5
-53
-100
-AcDbEntity
-  8
-0
-  6
-CONTINUOUS
- 62
-    0
-370
-   -2
-100
-AcDbMText
- 10
-50
- 20
--88.125
- 30
-0
- 40
-2.5
- 41
-13.05555555555556
- 71
-    5
- 72
-    1
-  1
-100.0000
-  7
-standard
-210
-0
-220
-0
-230
-1
- 50
-0
- 73
-    2
- 44
-1
-  0
-SOLID
-  5
-54
-100
-AcDbEntity
-  8
-0
-  6
-ByBlock
- 62
-    0
-370
-   -2
-100
-AcDbTrace
- 10
-6.123233995736766e-16
- 20
--90
- 30
-0
- 11
-2.5
- 21
--89.58371534222717
- 31
-0
- 12
-2.5
- 22
--90.41628465777283
- 32
-0
- 13
-2.5
- 23
--90.41628465777283
- 33
-0
-  0
-SOLID
-  5
-55
-100
-AcDbEntity
-  8
-0
-  6
-ByBlock
- 62
-    0
-370
-   -2
-100
-AcDbTrace
- 10
-100
- 20
--90
- 30
-0
- 11
-97.5
- 21
--90.41628465777283
- 31
-0
- 12
-97.5
- 22
--89.58371534222717
- 32
-0
- 13
-97.5
- 23
--89.58371534222717
- 33
-0
-  0
-ENDBLK
-  5
-4F
-330
-4D
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockEnd
-  0
 ENDSEC
   0
 SECTION
   2
 ENTITIES
   0
-DIMENSION
-  5
-56
-100
-AcDbEntity
-  8
-0
-  6
-ByLayer
- 62
-  256
-370
-   -1
-100
-AcDbDimension
-  2
-*D1
- 10
-100
- 20
--90
- 30
-0
- 11
-50
- 21
--88.125
- 31
-0
- 70
-   33
- 71
-    5
-  3
-Standard
- 53
-0
-210
-0
-220
-0
-230
-1
-100
-AcDbAlignedDimension
- 13
-0
- 23
--100
- 33
-0
- 14
-100
- 24
--100
- 34
-0
-  0
 LWPOLYLINE
   5
-57
+4D
 100
 AcDbEntity
   8
@@ -3025,7 +2715,7 @@ AcDbDictionary
   0
 PLOTSETTINGS
   5
-58
+4E
 100
 AcDbPlotSettings
   6
