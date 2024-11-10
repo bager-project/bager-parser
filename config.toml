@@ -3,7 +3,7 @@
 [paths]
 dxf_path = "dxf/square_thick.dxf"
 position_path = "POSITION.toml"
-image_path = "square_no_dimensions.png"
+image_path = "image/triangle_no_dimensions.png"
 
 [extractor]
 type = "image"
