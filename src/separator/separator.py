@@ -1,7 +1,7 @@
 # AUTHOR Andrej Bartulin
 # PROJECT: B.A.G.E.R. parser
-# LICENSE: 
-# DESCRIPTION: separator entry file
+# LICENSE: Polyform Shield License 1.0.0
+# DESCRIPTION: Separator entry file
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,14 +21,14 @@ class Separator:
         self.polygon = None
 
         # Variable holding grid size
-        grid_size = 10
+        grid_size = 20
 
         polygon_result:int = self.create_polygon()
         if polygon_result != 0:
             return
         
         self.create_divisions(grid_size)
-        self.plot_grid()
+        # self.plot_grid()
 
     # Create polygon from extracted entities
     def create_polygon(self) -> int:
@@ -109,7 +109,7 @@ class Separator:
         # Plot the polygon
         x, y = self.polygon.exterior.xy
         ax.plot(x, y, color='black')
-        
+
         # Plot the divisions
         for division in self.grid:
             if isinstance(division, LineString):
@@ -121,3 +121,6 @@ class Separator:
                     ax.plot(x, y, color='blue')
 
         plt.show()
+
+    def get_grid(self):
+        return self.grid

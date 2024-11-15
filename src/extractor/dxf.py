@@ -1,6 +1,6 @@
 # AUTHOR Andrej Bartulin, EndermanPC
 # PROJECT: B.A.G.E.R. parser
-# LICENSE: 
+# LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: .dxf extractor entry file
 
 import ezdxf

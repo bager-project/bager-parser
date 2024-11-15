@@ -1,6 +1,6 @@
 # AUTHOR Andrej Bartulin
 # PROJECT: B.A.G.E.R. parser
-# LICENSE: 
+# LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: Entry file
 
 import colorama
@@ -11,6 +11,7 @@ import toml
 from config.position import *
 from extractor.dxf import *
 from extractor.image import *
+from lexer.lexer import *
 from separator.separator import *
 from tree.ast import *
 
@@ -33,15 +34,18 @@ if __name__ == "__main__":
     print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
 
     position = Position(parsed_toml['paths']['position_path'])
+    extractor = None
+
     if (parsed_toml['extractor']['type'] == "dxf"):
-        dxf = DXF(parsed_toml['paths']['dxf_path'])
-        
-        elements = dxf.get_elements()
-        separator = Separator(elements)
+        extractor = DXF(parsed_toml['paths']['dxf_path'])
 
     elif (parsed_toml["extractor"]['type'] == "image"):
-        image = Image(parsed_toml['paths']['image_path'])
-        image.execute()
+        extractor = Image(parsed_toml['paths']['image_path'])
+        extractor.execute()
 
-        elements = image.get_elements()
+    if extractor != None:
+        elements = extractor.get_elements()
         separator = Separator(elements)
+
+        grid = separator.get_grid()
+        lexer = Lexer(grid)
