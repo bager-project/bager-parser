@@ -9,8 +9,6 @@ class Lexer:
     def __init__(self, grid):
         self.grid = grid
 
-        self.test_grid()
-
     def test_grid(self):
         for i in range(len(self.grid)):
             print(self.grid[i])

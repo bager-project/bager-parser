@@ -28,7 +28,6 @@ class Separator:
             return
         
         self.create_divisions(grid_size)
-        # self.plot_grid()
 
     # Create polygon from extracted entities
     def create_polygon(self) -> int:

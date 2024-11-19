@@ -6,6 +6,7 @@
 import colorama
 import os
 import sys
+import threading
 import toml
 
 from config.position import *
@@ -49,3 +50,12 @@ if __name__ == "__main__":
 
         grid = separator.get_grid()
         lexer = Lexer(grid)
+
+        thread1 = threading.Thread(target=lexer.test_grid())
+        thread2 = threading.Thread(target=separator.plot_grid())
+
+        thread1.start()
+        thread2.start()
+
+        thread1.join()
+        thread2.join()
