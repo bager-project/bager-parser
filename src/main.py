@@ -51,7 +51,7 @@ if __name__ == "__main__":
         grid = separator.get_grid()
         lexer = Lexer(grid)
 
-        thread1 = threading.Thread(target=lexer.test_grid())
+        thread1 = threading.Thread(target=lexer.execute())
         thread2 = threading.Thread(target=separator.plot_grid())
 
         thread1.start()
