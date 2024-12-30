@@ -14,6 +14,12 @@ class Separator:
     def __init__(self, elements):
         self.elements = elements
 
+        # [Polygon A, Polygon B]
+        # [Grid of polygon A, Grid of polygon B]
+        # [Division 1 of grid A, Division 1 of grid B]
+        # [Division 2 of grid A, Division 2 of grid B]
+        # [Division 3 of grid A, Division 3 of grid B]
+
         # Variable holding grids (divided shapes)
         self.grids = []
 
@@ -32,14 +38,29 @@ class Separator:
     # Create polygon from extracted entities
     def create_polygon(self) -> int:
         all_coords = []
+        line_count = 0
 
         if len(self.elements['LINE']):
             for line in self.elements['LINE']:
                 all_coords.extend(line.coords)
 
+                line_count += 1
+
+                if line_count >= 4: # how much lines needed for rectangle
+                    self.polygons.append(Polygon(all_coords))
+                    all_coords = []
+                    line_count = 0 
+
         elif len(self.elements['LWPOLYLINE']):
             for polyline in self.elements['LWPOLYLINE']:
                 all_coords.extend(polyline.get_points('xy'))
+
+                line_count += 1
+
+                if line_count >= 1: # how much lwpolylines needed for rectangle
+                    self.polygons.append(Polygon(all_coords))
+                    all_coords = []
+                    line_count = 0 
 
         elif len(self.elements['POINTS']):
             # Sort points by angle or other strategy for meaningful polygon formation
@@ -53,7 +74,6 @@ class Separator:
             print("No element found to create polygon!")
             return 1
 
-        self.polygons.append(Polygon(all_coords))
         return 0
 
     # Divide polygon into smaller pieces
@@ -101,7 +121,8 @@ class Separator:
             plt.xlabel('X')
             plt.ylabel('Y')
             plt.grid(True)
-            plt.show()
+
+        plt.show()
     
     # Plot divided polygon on the screen
     def plot_grid(self) -> None:
@@ -122,7 +143,7 @@ class Separator:
                         x, y = geom.exterior.xy
                         ax.plot(x, y, color='blue')
 
-            plt.show()
+        plt.show()
 
     def get_shapes(self):
         return (self.polygons, self.grids)
