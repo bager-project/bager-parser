@@ -23,10 +23,44 @@ class Image:
         self._color_gradation = False
         self._two_color_gradation = False
 
+        # Dictionary to store all elements
+        # https://ezdxf.readthedocs.io/en/stable/dxfentities/index.html
         self.elements = {
-            'LINES': [],
+            'ARC': [],
+            'ATTRIB': [],
+            'BODY': [],
+            'CIRCLE': [],
+            'DIMENSION': [],
+            'ARC_DIMENSION': [],
+            'ELLIPSE': [],
+            'HATCH': [],
+            'HELIX': [],
+            'IMAGE': [],
+            'INSERT': [],
+            'LEADER': [],
+            'LINE': [],
             'LWPOLYLINE': [],
-            'POINTS': [],
+            'MLINE': [],
+            'MESH': [],
+            'MPOLYGON': [],
+            'MTEXT': [],
+            'MULTILEADER': [],
+            'POINT': [],
+            'POINTS': [], # this is for image extractor
+            'POLYLINE': [],
+            'VERTEX': [],
+            'RAY': [],
+            'REGION': [],
+            'SHAPE': [],
+            'SOLID': [],
+            'SPLINE': [],
+            'SURFACE': [],
+            'TEXT': [],
+            'TRACE': [],
+            'VIEWPORT': [],
+            'WIPEOUT': [],
+            'XLINE': [],
+            'UNIMPLEMENTED': [],
         }
 
     def color_gradation(self, line_length, min_length, max_length):

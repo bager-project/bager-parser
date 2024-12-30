@@ -15,11 +15,43 @@ class DXF:
         self.path = path
     
         # Dictionary to store all elements
+        # https://ezdxf.readthedocs.io/en/stable/dxfentities/index.html
         self.elements = {
-            'LINES': [],
+            'ARC': [],
+            'ATTRIB': [],
+            'BODY': [],
+            'CIRCLE': [],
+            'DIMENSION': [],
+            'ARC_DIMENSION': [],
+            'ELLIPSE': [],
+            'HATCH': [],
+            'HELIX': [],
+            'IMAGE': [],
+            'INSERT': [],
+            'LEADER': [],
+            'LINE': [],
             'LWPOLYLINE': [],
-            'DIMENSIONS': [],
-            "UNIMPLEMENTED": [],
+            'MLINE': [],
+            'MESH': [],
+            'MPOLYGON': [],
+            'MTEXT': [],
+            'MULTILEADER': [],
+            'POINT': [],
+            'POINTS': [], # this is for image extractor
+            'POLYLINE': [],
+            'VERTEX': [],
+            'RAY': [],
+            'REGION': [],
+            'SHAPE': [],
+            'SOLID': [],
+            'SPLINE': [],
+            'SURFACE': [],
+            'TEXT': [],
+            'TRACE': [],
+            'VIEWPORT': [],
+            'WIPEOUT': [],
+            'XLINE': [],
+            'UNIMPLEMENTED': [],
         }
 
         if not os.path.exists(path):
@@ -46,13 +78,13 @@ class DXF:
                     start_point = (entity.dxf.start.x, entity.dxf.start.y)
                     end_point = (entity.dxf.end.x, entity.dxf.end.y)
 
-                    self.elements['LINES'].append(LineString([start_point, end_point]))
+                    self.elements['LINE'].append(LineString([start_point, end_point]))
 
                 case 'LWPOLYLINE':
                     self.elements['LWPOLYLINE'].append(entity)
 
                 case 'DIMENSION':
-                    self.elements['DIMENSIONS'].append(entity)
+                    self.elements['DIMENSION'].append(entity)
 
                 case _:
                     self.elements['UNIMPLEMENTED'].append(entity)

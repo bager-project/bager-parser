@@ -6,9 +6,14 @@
 class Lexer:
     
     # Initialize all variables
-    def __init__(self, grid):
-        self.grid = grid
+    def __init__(self, polygons, grids):
+        self.polygons = polygons
+        self.grids = grids
 
     def execute(self):
-        for i in range(len(self.grid)):
-            print(self.grid[i])
+        for polygon, grid in zip(self.polygons, self.grids):
+            print(polygon)
+            for divsion in grid:
+                print(divsion)
+            
+            print("--------------------")

@@ -48,8 +48,8 @@ if __name__ == "__main__":
         elements = extractor.get_elements()
         separator = Separator(elements)
 
-        grid = separator.get_grid()
-        lexer = Lexer(grid)
+        polygons, grids = separator.get_shapes()
+        lexer = Lexer(polygons, grids)
 
         thread1 = threading.Thread(target=lexer.execute())
         thread2 = threading.Thread(target=separator.plot_grid())
