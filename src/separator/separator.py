@@ -6,7 +6,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import LineString, Polygon, Point
 
 class Separator:
 
@@ -38,18 +38,24 @@ class Separator:
     # Create polygon from extracted entities
     def create_polygon(self) -> int:
         all_coords = []
+        start_point = None
         line_count = 0
 
         if len(self.elements['LINE']):
             for line in self.elements['LINE']:
                 all_coords.extend(line.coords)
 
-                line_count += 1
-
-                if line_count >= 4: # how much lines needed for rectangle
+                # Check if the shape is closed
+                if start_point is None:
+                    start_point = line.coords[0]
+                elif Point(line.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
                     self.polygons.append(Polygon(all_coords))
                     all_coords = []
-                    line_count = 0 
+                    start_point = None
+
+            # If there are leftover lines, create a polygon from them
+            if all_coords:
+                self.polygons.append(Polygon(all_coords))
 
         elif len(self.elements['LWPOLYLINE']):
             for polyline in self.elements['LWPOLYLINE']:
@@ -57,21 +63,23 @@ class Separator:
 
                 line_count += 1
 
-                if line_count >= 1: # how much lwpolylines needed for rectangle
+                if line_count >= 1: # how much LWPOLYLINE(s) needed for a rectangle
                     self.polygons.append(Polygon(all_coords))
                     all_coords = []
                     line_count = 0 
 
+            if all_coords:
+                self.polygons.append(Polygon(all_coords))
+
         elif len(self.elements['POINTS']):
-            # Sort points by angle or other strategy for meaningful polygon formation
+            # Create polygons from points using convex hulls
             points = np.array(self.elements['POINTS'])
-            hull = cv2.convexHull(points)  # Ensure a closed convex shape
+            hull = cv2.convexHull(points)
 
             self.polygons.append(Polygon(hull.squeeze()))
-            return 0
 
         else:
-            print("No element found to create polygon!")
+            print("No element found to create polygons!")
             return 1
 
         return 0
