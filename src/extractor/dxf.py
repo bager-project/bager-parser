@@ -14,7 +14,7 @@ class DXF:
     def __init__(self, path) -> None:
         self.path = path
     
-        # Dictionary to store all elements
+        # Dictionary to store all extracted Shapely elements
         # https://ezdxf.readthedocs.io/en/stable/dxfentities/index.html
         self.elements = {
             'ARC': [],
@@ -69,17 +69,15 @@ class DXF:
     def get_elements(self):
         return self.elements
 
-    # Extract .dxf entities
+    # Extract .dxf entities and convert them to Shapely geometry
     def extract_entities(self) -> None:
         # Extract different types of elements
         for entity in self.modelspace:
-            print(entity.dxftype())
             match entity.dxftype():
                 case 'CIRCLE':
                     center = (entity.dxf.center.x, entity.dxf.center.y)
                     radius = entity.dxf.radius
                     
-                    # Convert the circle to a Shapely geometry (approximated as a polygon)
                     circle = Point(center).buffer(radius, resolution=64)
                     self.elements['CIRCLE'].append(circle)
 
@@ -90,7 +88,8 @@ class DXF:
                     self.elements['LINE'].append(LineString([start_point, end_point]))
 
                 case 'LWPOLYLINE':
-                    self.elements['LWPOLYLINE'].append(entity)
+                    points = [(point[0], point[1]) for point in entity]
+                    self.elements['LWPOLYLINE'].append(LineString(points))
 
                 case 'DIMENSION':
                     self.elements['DIMENSION'].append(entity)

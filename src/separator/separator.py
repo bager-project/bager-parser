@@ -6,7 +6,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-from shapely.geometry import LineString, Polygon, Point
+from shapely.geometry import LineString, Point, Polygon
 
 class Separator:
 
@@ -35,12 +35,10 @@ class Separator:
         
         self.create_divisions(grid_size)
 
-    # Create polygon from extracted entities
+    # Create polygon from extracted Shapely elements
     def create_polygon(self) -> int:
         all_coords = []
         start_point = None
-
-        line_count = 0
 
         if (len(self.elements['CIRCLE'])):
             for circle in self.elements['CIRCLE']:
@@ -64,15 +62,14 @@ class Separator:
 
         elif len(self.elements['LWPOLYLINE']):
             for polyline in self.elements['LWPOLYLINE']:
-                all_coords.extend(polyline.get_points('xy'))
+                all_coords.extend(polyline.coords)
 
-                line_count += 1
-
-                if line_count >= 1: # how much LWPOLYLINE(s) needed for a rectangle
+                # Check if the shape is closed
+                if (polyline.coords.xy[0][0] == polyline.coords.xy[0][-1]):
                     self.polygons.append(Polygon(all_coords))
                     all_coords = []
-                    line_count = 0 
 
+            # If there are leftover lines, create a polygon from them
             if all_coords:
                 self.polygons.append(Polygon(all_coords))
 
