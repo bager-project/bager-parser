@@ -44,6 +44,10 @@ class Separator:
             for circle in self.elements['CIRCLE']:
                 self.polygons.append(circle)
 
+        elif len(self.elements['ELLIPSE']):
+            for ellipse in self.elements['ELLIPSE']:
+                self.polygons.append(ellipse)
+
         elif len(self.elements['LINE']):
             for line in self.elements['LINE']:
                 all_coords.extend(line.coords)

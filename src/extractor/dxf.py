@@ -4,8 +4,20 @@
 # DESCRIPTION: .dxf extractor entry file
 
 import ezdxf
+import numpy as np
 import os
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString, Point, Polygon
+
+# Helper function to create an ellipse as Shapely polygon
+def create_ellipse(center, major_axis, minor_axis, start_param, end_param, resolution=64):
+    # Parametric equations for an ellipse
+    theta = np.linspace(start_param, end_param, resolution)
+    x = center[0] + major_axis[0] * np.cos(theta) + minor_axis[0] * np.sin(theta)
+    y = center[1] + major_axis[1] * np.cos(theta) + minor_axis[1] * np.sin(theta)
+
+    # Create the polygon approximation of the ellipse
+    points = list(zip(x, y))
+    return Polygon(points)
 
 # DXF parser
 class DXF:
@@ -80,6 +92,27 @@ class DXF:
                     
                     circle = Point(center).buffer(radius, resolution=64)
                     self.elements['CIRCLE'].append(circle)
+
+                case 'ELLIPSE':
+                    # Extract ellipse parameters
+                    center = (entity.dxf.center.x, entity.dxf.center.y)
+                    major_axis = np.array([entity.dxf.major_axis.x, entity.dxf.major_axis.y])  # Major axis vector
+                    ratio = entity.dxf.ratio  # Ratio of minor to major axis
+                    start_param = entity.dxf.start_param  # Start param (angle in radians)
+                    end_param = entity.dxf.end_param  # End param (angle in radians)
+                    extrusion = np.array([entity.dxf.extrusion.x, entity.dxf.extrusion.y, entity.dxf.extrusion.z])  # Normal vector to the ellipse plane
+
+                    # Calculate the length of the major axis (magnitude of the major_axis vector)
+                    major_axis_length = np.linalg.norm(major_axis)
+
+                    # Calculate the minor axis by taking the cross product of extrusion and major_axis
+                    minor_axis = np.cross(extrusion, major_axis)
+                    minor_axis_length = np.linalg.norm(minor_axis)
+                    minor_axis = minor_axis / minor_axis_length * major_axis_length * ratio  # Scale to the minor axis length
+
+                    # Create ellipse as Shapely geometry
+                    ellipse = create_ellipse(center, major_axis, minor_axis, start_param, end_param)
+                    self.elements['ELLIPSE'].append(ellipse)
 
                 case 'LINE':
                     start_point = (entity.dxf.start.x, entity.dxf.start.y)
