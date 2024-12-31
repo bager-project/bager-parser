@@ -39,9 +39,14 @@ class Separator:
     def create_polygon(self) -> int:
         all_coords = []
         start_point = None
+
         line_count = 0
 
-        if len(self.elements['LINE']):
+        if (len(self.elements['CIRCLE'])):
+            for circle in self.elements['CIRCLE']:
+                self.polygons.append(circle)
+
+        elif len(self.elements['LINE']):
             for line in self.elements['LINE']:
                 all_coords.extend(line.coords)
 

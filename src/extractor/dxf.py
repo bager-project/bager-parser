@@ -5,7 +5,7 @@
 
 import ezdxf
 import os
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point
 
 # DXF parser
 class DXF:
@@ -73,7 +73,16 @@ class DXF:
     def extract_entities(self) -> None:
         # Extract different types of elements
         for entity in self.modelspace:
+            print(entity.dxftype())
             match entity.dxftype():
+                case 'CIRCLE':
+                    center = (entity.dxf.center.x, entity.dxf.center.y)
+                    radius = entity.dxf.radius
+                    
+                    # Convert the circle to a Shapely geometry (approximated as a polygon)
+                    circle = Point(center).buffer(radius, resolution=64)
+                    self.elements['CIRCLE'].append(circle)
+
                 case 'LINE':
                     start_point = (entity.dxf.start.x, entity.dxf.start.y)
                     end_point = (entity.dxf.end.x, entity.dxf.end.y)

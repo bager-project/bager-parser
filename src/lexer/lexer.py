@@ -12,7 +12,10 @@ class Lexer:
 
     def execute(self):
         for polygon, grid in zip(self.polygons, self.grids):
+            print("--- SHAPE ----: ")
             print(polygon)
+            
+            print("--- DIVISIONS ---: ")
             for divsion in grid:
                 print(divsion)
             
