@@ -40,53 +40,45 @@ class Separator:
         all_coords = []
         start_point = None
 
-        if (len(self.elements['CIRCLE'])):
-            for circle in self.elements['CIRCLE']:
-                self.polygons.append(circle)
+        if len(self.elements) == 0:
+            print("No element found to create polygons!")
+            return 1
 
-        elif len(self.elements['ELLIPSE']):
-            for ellipse in self.elements['ELLIPSE']:
-                self.polygons.append(ellipse)
+        for circle in self.elements['CIRCLE']:
+            self.polygons.append(circle)
 
-        elif len(self.elements['LINE']):
-            for line in self.elements['LINE']:
-                all_coords.extend(line.coords)
+        for ellipse in self.elements['ELLIPSE']:
+            self.polygons.append(ellipse)
 
-                # Check if the shape is closed
-                if start_point is None:
-                    start_point = line.coords[0]
-                elif Point(line.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
-                    self.polygons.append(Polygon(all_coords))
-                    all_coords = []
-                    start_point = None
+        for line in self.elements['LINE']:
+            all_coords.extend(line.coords)
 
-            # If there are leftover lines, create a polygon from them
-            if all_coords:
+            # Check if the shape is closed
+            if start_point is None:
+                start_point = line.coords[0]
+            elif Point(line.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
                 self.polygons.append(Polygon(all_coords))
+                all_coords = []
+                start_point = None
 
-        elif len(self.elements['LWPOLYLINE']):
-            for polyline in self.elements['LWPOLYLINE']:
-                all_coords.extend(polyline.coords)
+        for polyline in self.elements['LWPOLYLINE']:
+            all_coords.extend(polyline.coords)
 
-                # Check if the shape is closed
-                if (polyline.coords.xy[0][0] == polyline.coords.xy[0][-1]):
-                    self.polygons.append(Polygon(all_coords))
-                    all_coords = []
-
-            # If there are leftover lines, create a polygon from them
-            if all_coords:
+            # Check if the shape is closed
+            if (polyline.coords.xy[0][0] == polyline.coords.xy[0][-1]):
                 self.polygons.append(Polygon(all_coords))
+                all_coords = []
 
-        elif len(self.elements['POINTS']):
+        if len(self.elements['POINTS']):
             # Create polygons from points using convex hulls
             points = np.array(self.elements['POINTS'])
             hull = cv2.convexHull(points)
 
             self.polygons.append(Polygon(hull.squeeze()))
 
-        else:
-            print("No element found to create polygons!")
-            return 1
+        # If there are leftover lines, create a polygon from them
+        if all_coords:
+            self.polygons.append(Polygon(all_coords))
 
         return 0
 
