@@ -69,6 +69,14 @@ class Separator:
                 self.polygons.append(Polygon(all_coords))
                 all_coords = []
 
+        for spline in self.elements['SPLINE']:
+            all_coords.extend(spline.coords)
+
+            # Check if the shape is closed
+            if len(all_coords) > 2 and all_coords[0] == all_coords[-1]:
+                self.polygons.append(Polygon(all_coords))
+                all_coords = []
+
         if len(self.elements['POINTS']):
             # Create polygons from points using convex hulls
             points = np.array(self.elements['POINTS'])
@@ -86,7 +94,7 @@ class Separator:
     def create_divisions(self, division_number):
         for polygon in self.polygons:
             min_x, min_y, max_x, max_y = polygon.bounds
-            y_points = np.arange(min_y, max_y, division_number)
+            y_points = np.arange(min_y, max_y + division_number, division_number)  # Ensure it covers the top edge
             
             horizontal_lines = []
             for y in y_points:
@@ -95,9 +103,12 @@ class Separator:
             
             clipped_lines = []
             for line in horizontal_lines:
-                clipped_line = polygon.intersection(line)
-                if not clipped_line.is_empty:
-                    clipped_lines.append(clipped_line)
+                intersection = polygon.intersection(line)
+                if not intersection.is_empty:
+                    if intersection.geom_type == "LineString":
+                        clipped_lines.append(intersection)
+                    elif intersection.geom_type == "MultiLineString":
+                        clipped_lines.extend(intersection.geoms)  # Use geoms to extract individual LineStrings
             
             self.grids.append(clipped_lines)
 

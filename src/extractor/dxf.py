@@ -114,6 +114,9 @@ class DXF:
                     ellipse = create_ellipse(center, major_axis, minor_axis, start_param, end_param)
                     self.elements['ELLIPSE'].append(ellipse)
 
+                case 'DIMENSION':
+                    self.elements['DIMENSION'].append(entity)
+
                 case 'LINE':
                     start_point = (entity.dxf.start.x, entity.dxf.start.y)
                     end_point = (entity.dxf.end.x, entity.dxf.end.y)
@@ -124,8 +127,11 @@ class DXF:
                     points = [(point[0], point[1]) for point in entity]
                     self.elements['LWPOLYLINE'].append(LineString(points))
 
-                case 'DIMENSION':
-                    self.elements['DIMENSION'].append(entity)
+                case 'SPLINE':
+                    control_points = [(p[0], p[1]) for p in entity.control_points]
+                    spline_line = LineString(control_points)
+
+                    self.elements['SPLINE'].append(spline_line)
 
                 case _:
                     self.elements['UNIMPLEMENTED'].append(entity)
