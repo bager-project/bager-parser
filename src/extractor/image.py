@@ -112,12 +112,12 @@ class Image:
 
         # Apply HoughLinesP method to directly obtain line end points
         lines = cv2.HoughLinesP(
-            edges,                  # Input edge image
-            1,                      # Distance resolution in pixels
-            np.pi / 180,            # Angle resolution in radians
-            threshold=100,          # Min number of votes for valid line
-            minLineLength=5,        # Min allowed length of line
-            maxLineGap=10           # Max allowed gap between lines for joining them
+            edges,                      # Input edge image
+            1000,                       # Distance resolution in pixels
+            np.pi / 180,                # Angle resolution in radians
+            threshold=1,                # Min number of votes for valid line
+            minLineLength=1,            # Min allowed length of line
+            maxLineGap=1                # Max allowed gap between lines for joining them
         )
 
         if lines is not None:
