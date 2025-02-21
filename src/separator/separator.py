@@ -6,7 +6,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-from shapely.geometry import LineString, Point, Polygon
+from shapely.geometry import LineString, Point, Polygon, MultiPolygon
 
 class Separator:
 
@@ -27,13 +27,13 @@ class Separator:
         self.polygons = []
 
         # Variable holding grid size
-        grid_size = 20
+        self.grid_size = 20
 
         polygon_result:int = self.create_polygon()
         if polygon_result != 0:
             return
         
-        self.create_divisions(grid_size)
+        self.create_divisions()
 
     # Create polygon from extracted Shapely elements
     def create_polygon(self) -> int:
@@ -89,12 +89,38 @@ class Separator:
             self.polygons.append(Polygon(all_coords))
 
         return 0
+    
+    def _create_rectangles_for_strip(self, polygon, horizontal_line, y):
+        """
+        Create rectangles from the horizontal strip formed by intersecting horizontal line with the polygon.
+        The longer side will be parallel to the X-axis.
+        """
+        min_x, min_y, max_x, max_y = polygon.bounds
+        rectangles = []
 
-    # Divide polygon into smaller pieces
-    def create_divisions(self, division_number):
+        # Identify the intersections with the polygon's boundary
+        left_x = max_x
+        right_x = min_x
+        
+        # Check the horizontal line's intersections with the polygon
+        intersection = polygon.intersection(horizontal_line)
+        
+        if intersection.geom_type == "LineString":
+            coords = list(intersection.coords)
+            # Take the start and end points of the intersection as the x-boundaries
+            left_x = min(coords[0][0], coords[-1][0])
+            right_x = max(coords[0][0], coords[-1][0])
+
+            # Now we create a rectangle where the long side is parallel to the X-axis
+            rect = Polygon([(left_x, y), (right_x, y), (right_x, y + self.grid_size), (left_x, y + self.grid_size)])
+            rectangles.append(rect)
+
+        return rectangles
+
+    def create_divisions(self):
         for polygon in self.polygons:
             min_x, min_y, max_x, max_y = polygon.bounds
-            y_points = np.arange(min_y, max_y + division_number, division_number)  # Ensure it covers the top edge
+            y_points = np.arange(min_y, max_y + self.grid_size, self.grid_size)  # Ensure it covers the top edge
             
             horizontal_lines = []
             for y in y_points:
@@ -156,6 +182,9 @@ class Separator:
                     x, y = division.xy
                     ax.plot(x, y, color='blue')
                 elif isinstance(division, Polygon):
+                    x, y = division.exterior.xy  # Fix: Directly get exterior coordinates
+                    ax.plot(x, y, color='blue')
+                elif isinstance(division, MultiPolygon):
                     for geom in division.geoms:
                         x, y = geom.exterior.xy
                         ax.plot(x, y, color='blue')
