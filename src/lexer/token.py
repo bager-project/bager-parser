@@ -3,18 +3,24 @@
 # LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: Enums of tokens
 
-from enum import Enum
+from enum import IntEnum
 
-class Arm(Enum):
-    BOOM = 0,
-    STICK = 1,
-    BUCKET = 2,
-
-class Movement(Enum):
+class Movement(IntEnum):
     FORWARD = 0,
     BACK = 1,
     LEFT = 2,
     RIGHT = 3,
 
-class Motor(Enum):
-    pass
+class Arm(IntEnum):
+    BOOM = 10,
+    STICK = 11,
+    BUCKET = 12,
+
+class Body(IntEnum):
+    MOVEMENT = 20,
+    ROTATION = 21,
+
+ArmMovement = IntEnum("ArmMovement", 
+                        {**Movement.__members__, **Arm.__members__})
+BodyMovement = IntEnum("BodyMovement", 
+                        {**Movement.__members__, **Body.__members__})

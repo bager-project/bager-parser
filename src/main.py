@@ -14,7 +14,6 @@ from extractor.dxf import *
 from extractor.image import *
 from lexer.lexer import *
 from separator.separator import *
-from tree.ast import *
 
 if __name__ == "__main__":
     config_path: str = ""
