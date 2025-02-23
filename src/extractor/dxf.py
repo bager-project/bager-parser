@@ -4,12 +4,35 @@
 # DESCRIPTION: .dxf extractor entry file
 
 import ezdxf
+import math
 import numpy as np
 import os
 from shapely.geometry import LineString, Point, Polygon
 
-# Helper function to create an ellipse as Shapely polygon
+def arc_to_linestring(center, radius, start_angle, end_angle, num_segments=64):
+    """
+    Convert a .dxf ARC entity into a Shapely LineString.
+    """
+    
+    # Convert start and end angles from degrees to radians
+    start_rad = math.radians(start_angle)
+    end_rad = math.radians(end_angle)
+    
+    # Handle cases where the arc crosses the 0-degree line
+    if end_rad < start_rad:
+        end_rad += 2 * math.pi
+    
+    # Generate points along the arc using a linear space of angles
+    angles = np.linspace(start_rad, end_rad, num_segments)
+    points = [(center[0] + radius * math.cos(theta), center[1] + radius * math.sin(theta)) for theta in angles]
+    
+    return LineString(points)
+
 def create_ellipse(center, major_axis, minor_axis, start_param, end_param, resolution=64):
+    """
+        Convert .dxf ELLIPSE entity into a Shapely Polygon
+    """
+    
     # Parametric equations for an ellipse
     theta = np.linspace(start_param, end_param, resolution)
     x = center[0] + major_axis[0] * np.cos(theta) + minor_axis[0] * np.sin(theta)
@@ -19,11 +42,20 @@ def create_ellipse(center, major_axis, minor_axis, start_param, end_param, resol
     points = list(zip(x, y))
     return Polygon(points)
 
-# DXF parser
 class DXF:
+    """
+        Class extracting .dxf entities and converting them into
+        a form of Shapely class.
 
-    # Initialize all variables
+        Attributes:
+        path(str): path to the .dxf file
+    """
+
     def __init__(self, path) -> None:
+        """
+            Initialize all the variables.
+        """
+
         self.path = path
     
         # Dictionary to store all extracted Shapely elements
@@ -77,15 +109,31 @@ class DXF:
 
         self.extract_entities()
 
-    # Run parser
     def get_elements(self):
+        """
+            Return the dictionary containing all detected
+            .dxf elements.
+        """
+
         return self.elements
 
-    # Extract .dxf entities and convert them to Shapely geometry
     def extract_entities(self) -> None:
-        # Extract different types of elements
+        """
+            Extract .dxf entities and convert them to
+            Shapely geometry.
+        """
+
         for entity in self.modelspace:
             match entity.dxftype():
+                case 'ARC':
+                    center = (entity.dxf.center.x, entity.dxf.center.y)
+                    radius = entity.dxf.radius
+                    start_angle = entity.dxf.start_angle
+                    end_angle = entity.dxf.end_angle
+
+                    arc = arc_to_linestring(center, radius, start_angle, end_angle)
+                    self.elements['ARC'].append(arc)
+
                 case 'CIRCLE':
                     center = (entity.dxf.center.x, entity.dxf.center.y)
                     radius = entity.dxf.radius
@@ -94,13 +142,12 @@ class DXF:
                     self.elements['CIRCLE'].append(circle)
 
                 case 'ELLIPSE':
-                    # Extract ellipse parameters
                     center = (entity.dxf.center.x, entity.dxf.center.y)
-                    major_axis = np.array([entity.dxf.major_axis.x, entity.dxf.major_axis.y])  # Major axis vector
-                    ratio = entity.dxf.ratio  # Ratio of minor to major axis
-                    start_param = entity.dxf.start_param  # Start param (angle in radians)
-                    end_param = entity.dxf.end_param  # End param (angle in radians)
-                    extrusion = np.array([entity.dxf.extrusion.x, entity.dxf.extrusion.y, entity.dxf.extrusion.z])  # Normal vector to the ellipse plane
+                    major_axis = np.array([entity.dxf.major_axis.x, entity.dxf.major_axis.y])
+                    ratio = entity.dxf.ratio
+                    start_param = entity.dxf.start_param
+                    end_param = entity.dxf.end_param
+                    extrusion = np.array([entity.dxf.extrusion.x, entity.dxf.extrusion.y, entity.dxf.extrusion.z])
 
                     # Calculate the length of the major axis (magnitude of the major_axis vector)
                     major_axis_length = np.linalg.norm(major_axis)
@@ -108,9 +155,8 @@ class DXF:
                     # Calculate the minor axis by taking the cross product of extrusion and major_axis
                     minor_axis = np.cross(extrusion, major_axis)
                     minor_axis_length = np.linalg.norm(minor_axis)
-                    minor_axis = minor_axis / minor_axis_length * major_axis_length * ratio  # Scale to the minor axis length
+                    minor_axis = minor_axis / minor_axis_length * major_axis_length * ratio
 
-                    # Create ellipse as Shapely geometry
                     ellipse = create_ellipse(center, major_axis, minor_axis, start_param, end_param)
                     self.elements['ELLIPSE'].append(ellipse)
 
@@ -138,7 +184,11 @@ class DXF:
 
     # Print found entities
     def print_entities(self) -> None:
-        # Extract different types of elements
+        """
+            DEBUG FUNCTION!
+
+            Print extracted .dxf entities.
+        """
         for element_type, entities in self.elements.items():
             print(f"{element_type}: {len(entities)} entities found")
             for entity in entities:

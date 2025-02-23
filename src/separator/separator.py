@@ -3,31 +3,35 @@
 # LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: Separator entry file
 
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
-from shapely.geometry import LineString, Point, Polygon, MultiPolygon
+from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 
 class Separator:
+    """
+        Create a polygon from extracted entities
+        and divide them into smaller divisions/cells.
 
-    # Initialize all variables
+        Attributes:
+            elements(list): extracted entities converted into a Shapely form
+    """
+
     def __init__(self, elements):
+        """
+            Initialize all the variables.
+        """
+
         self.elements = elements
 
-        # [Polygon A, Polygon B]
-        # [Grid of polygon A, Grid of polygon B]
-        # [Division 1 of grid A, Division 1 of grid B]
-        # [Division 2 of grid A, Division 2 of grid B]
-        # [Division 3 of grid A, Division 3 of grid B]
+        # Variable holding divisions of each polygon
+        self.divisions = []
 
-        # Variable holding grids (divided shapes)
-        self.grids = []
-
-        # Variable holding polygons (undivided shapes)
+        # Variable holding polygons/shapes
         self.polygons = []
 
         # Variable holding grid size
-        self.grid_size = 20
+        self.grid_size = 10
 
         polygon_result:int = self.create_polygon()
         if polygon_result != 0:
@@ -35,14 +39,30 @@ class Separator:
         
         self.create_divisions()
 
-    # Create polygon from extracted Shapely elements
     def create_polygon(self) -> int:
+        """
+            Create a polygon from extracted
+            Shapely elements.
+        """
         all_coords = []
         start_point = None
 
         if len(self.elements) == 0:
             print("No element found to create polygons!")
             return 1
+        
+        for arc in self.elements['ARC']:
+            arc_coords = list(arc.coords)
+            all_coords.extend(arc_coords)
+
+            # Check if the shape is closed
+            if start_point is None:
+                start_point = arc_coords[0]
+
+            elif Point(arc_coords[-1]).distance(Point(start_point)) < 1e-6:
+                self.polygons.append(Polygon(all_coords))
+                all_coords = []
+                start_point = None
 
         for circle in self.elements['CIRCLE']:
             self.polygons.append(circle)
@@ -56,6 +76,7 @@ class Separator:
             # Check if the shape is closed
             if start_point is None:
                 start_point = line.coords[0]
+
             elif Point(line.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
                 self.polygons.append(Polygon(all_coords))
                 all_coords = []
@@ -89,57 +110,70 @@ class Separator:
             self.polygons.append(Polygon(all_coords))
 
         return 0
-    
-    def _create_rectangles_for_strip(self, polygon, horizontal_line, y):
-        """
-        Create rectangles from the horizontal strip formed by intersecting horizontal line with the polygon.
-        The longer side will be parallel to the X-axis.
-        """
-        min_x, min_y, max_x, max_y = polygon.bounds
-        rectangles = []
-
-        # Identify the intersections with the polygon's boundary
-        left_x = max_x
-        right_x = min_x
-        
-        # Check the horizontal line's intersections with the polygon
-        intersection = polygon.intersection(horizontal_line)
-        
-        if intersection.geom_type == "LineString":
-            coords = list(intersection.coords)
-            # Take the start and end points of the intersection as the x-boundaries
-            left_x = min(coords[0][0], coords[-1][0])
-            right_x = max(coords[0][0], coords[-1][0])
-
-            # Now we create a rectangle where the long side is parallel to the X-axis
-            rect = Polygon([(left_x, y), (right_x, y), (right_x, y + self.grid_size), (left_x, y + self.grid_size)])
-            rectangles.append(rect)
-
-        return rectangles
 
     def create_divisions(self):
+        """
+            Divide each polygon by adding division lines into
+            the `grids` variable.
+
+            First, add lines at regular interval defined in
+            `grid_size` variable and then, in case of straight
+            line, add additional lines from each breakpoint/edge.
+        """
+
+        # Tolerance for curved lines
+        tolerance = self.grid_size * 0.01
+        
         for polygon in self.polygons:
             min_x, min_y, max_x, max_y = polygon.bounds
-            y_points = np.arange(min_y, max_y + self.grid_size, self.grid_size)  # Ensure it covers the top edge
             
-            horizontal_lines = []
-            for y in y_points:
-                horizontal_line = LineString([(min_x, y), (max_x, y)])
-                horizontal_lines.append(horizontal_line)
+            # 1) Regular grid lines
+            y_grid = np.arange(min_y, max_y + self.grid_size, self.grid_size)
             
+            # 2) Polygon breakpoints (y-coords of vertices)
+            # Only include a vertex if its y is nearly the same as its neighbors,
+            # which indicates a straight (horizontal) segment.
+            coords = list(polygon.exterior.coords)
+
+            # Exclude the duplicate last point.
+            n = len(coords) - 1  
+            y_breakpoints = []
+
+            for i in range(n):
+                y_current = coords[i][1]
+
+                # Wrap-around: use the previous vertex (or the last one if at index 0)
+                y_prev = coords[i-1][1] if i > 0 else coords[n-1][1]
+                y_next = coords[(i+1) % n][1]
+
+                # Only include if the vertical differences are below the tolerance.
+                if abs(y_current - y_prev) < tolerance and abs(y_current - y_next) < tolerance:
+                    y_breakpoints.append(y_current)
+            
+            # 3) Combine & sort unique y-values
+            y_combined = np.unique(np.concatenate((y_grid, y_breakpoints)))
+            y_combined.sort()
+            
+            # 4) Create and clip each horizontal line to the polygon
             clipped_lines = []
-            for line in horizontal_lines:
+            for y in y_combined:
+                line = LineString([(min_x, y), (max_x, y)])
                 intersection = polygon.intersection(line)
                 if not intersection.is_empty:
                     if intersection.geom_type == "LineString":
                         clipped_lines.append(intersection)
                     elif intersection.geom_type == "MultiLineString":
-                        clipped_lines.extend(intersection.geoms)  # Use geoms to extract individual LineStrings
+                        clipped_lines.extend(intersection.geoms)
             
-            self.grids.append(clipped_lines)
+            # Store the final lines for this polygon
+            self.divisions.append(clipped_lines)
 
-    # Plot lines (LineString) on the screen
     def plot_lines(self):
+        """
+            DEBUG FUNCTION!
+
+            Plot lines.
+        """
         fig, ax = plt.subplots(figsize=(8, 8))
 
         # Loop over each detected line in the list
@@ -153,8 +187,12 @@ class Separator:
         plt.gca().set_aspect('equal', adjustable='box')  # Set equal aspect ratio
         plt.show()
 
-    # Plot created shape (Polygon) on the screen
     def plot_shape(self):
+        """
+            DEBUG FUNCTION!
+
+            Plot polygons.
+        """
         for polygon in self.polygons:
             x, y = polygon.exterior.xy  # Extract x and y coordinates
             plt.figure(figsize=(8, 8))
@@ -167,29 +205,36 @@ class Separator:
 
         plt.show()
     
-    # Plot divided polygon on the screen
     def plot_grid(self) -> None:
+        """
+            Plot divided polygons on the screen.
+        """
+
         fig, ax = plt.subplots()
 
-        for polygon, grid in zip(self.polygons, self.grids):
+        for polygon, division in zip(self.polygons, self.divisions):
             # Plot the polygon
             x, y = polygon.exterior.xy
             ax.plot(x, y, color='black')
 
             # Plot the divisions
-            for division in grid:
-                if isinstance(division, LineString):
-                    x, y = division.xy
+            for line in division:
+                if isinstance(line, LineString):
+                    x, y = line.xy
                     ax.plot(x, y, color='blue')
-                elif isinstance(division, Polygon):
-                    x, y = division.exterior.xy  # Fix: Directly get exterior coordinates
+                elif isinstance(line, Polygon):
+                    x, y = line.exterior.xy  # Fix: Directly get exterior coordinates
                     ax.plot(x, y, color='blue')
-                elif isinstance(division, MultiPolygon):
-                    for geom in division.geoms:
+                elif isinstance(line, MultiPolygon):
+                    for geom in line.geoms:
                         x, y = geom.exterior.xy
                         ax.plot(x, y, color='blue')
 
         plt.show()
 
     def get_shapes(self):
-        return (self.polygons, self.grids)
+        """
+            Return polygons and their divisions.
+        """
+
+        return (self.polygons, self.divisions)

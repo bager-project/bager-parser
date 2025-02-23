@@ -4,19 +4,32 @@
 # DESCRIPTION: Lexer entry file
 
 class Lexer:
-    
-    # Initialize all variables
-    def __init__(self, polygons, grids):
+    """
+        Tokenize every polygon division.
+
+        Attributes:
+            polygons(list): list of polygons
+            divisions(list): list of lines (divisions) FOR EACH polygon
+    """
+
+    def __init__(self, polygons, divisions):
+        """
+            Initialize all the variables.
+        """
         self.polygons = polygons
-        self.grids = grids
+        self.divisions = divisions
 
     def execute(self):
-        for polygon, grid in zip(self.polygons, self.grids):
+        """
+            Tokenize.
+        """
+        
+        for polygon, division in zip(self.polygons, self.divisions):
             print("--- SHAPE ----: ")
             print(polygon)
 
             print("--- DIVISIONS ---: ")
-            for divsion in grid:
-                print(divsion)
+            for line in division:
+                print(line)
             
             print("----------------------------------------")
