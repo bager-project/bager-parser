@@ -189,6 +189,7 @@ class DXF:
 
             Print extracted .dxf entities.
         """
+
         for element_type, entities in self.elements.items():
             print(f"{element_type}: {len(entities)} entities found")
             for entity in entities:

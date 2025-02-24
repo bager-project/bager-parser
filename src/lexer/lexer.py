@@ -16,6 +16,7 @@ class Lexer:
         """
             Initialize all the variables.
         """
+
         self.polygons = polygons
         self.divisions = divisions
 
