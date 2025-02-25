@@ -48,7 +48,7 @@ class Separator:
         self.grid_size = 10
 
         # Temporary variable telling us is polygon straight or curved
-        self.curvature = []
+        self.is_curved = True
 
         polygon_result:int = self.create_polygon()
         if polygon_result != 0:
@@ -65,70 +65,48 @@ class Separator:
         all_coords = []
         start_point = None
 
-        if len(self.elements) == 0:
-            print("No element found to create polygons!")
-            return 1
-        
-        for arc in self.elements['ARC']:
-            arc_coords = list(arc.coords)
-            all_coords.extend(arc_coords)
+        # Iterate through dictionary
+        for element in self.elements.items():
 
-            # Check if the shape is closed
-            if start_point is None:
-                start_point = arc_coords[0]
+            # If value is present, iterate through it
+            if element[1]:
+                for entity in element[1]:
+                    match entity:
+                        case LineString():
+                            if element[0] == "ARC" or element[0] == "LINE":
+                                all_coords.extend(entity.coords)
 
-            elif Point(arc_coords[-1]).distance(Point(start_point)) < 1e-6:
-                self.polygons.append(Polygon(all_coords))
-                self.curvature.append(True) # TODO!
-                all_coords = []
-                start_point = None
+                                # Check if the shape is closed
+                                if start_point is None:
+                                    start_point = entity.coords[0]
 
+                                elif Point(entity.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
+                                    self.polygons.append(Polygon(all_coords))
+                                    all_coords = []
+                                    start_point = None
 
-        for circle in self.elements['CIRCLE']:
-            self.polygons.append(circle)
-            self.curvature.append(True) # TODO!
+                            elif element[0] == "LWPOLYLINE":
+                                all_coords.extend(entity.coords)
 
-        for ellipse in self.elements['ELLIPSE']:
-            self.polygons.append(ellipse)
-            self.curvature.append(True) # TODO!
+                                # Check if the shape is closed
+                                if (entity.coords.xy[0][0] == entity.coords.xy[0][-1]):
+                                    self.polygons.append(Polygon(all_coords))
+                                    all_coords = []
 
-        for line in self.elements['LINE']:
-            all_coords.extend(line.coords)
+                            elif element[0] == "SPLINE":
+                                all_coords.extend(entity.coords)
 
-            # Check if the shape is closed
-            if start_point is None:
-                start_point = line.coords[0]
+                                # Check if the shape is closed
+                                if len(all_coords) > 2 and all_coords[0] == all_coords[-1]:
+                                    self.polygons.append(Polygon(all_coords))
+                                    all_coords = []
 
-            elif Point(line.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
-                self.polygons.append(Polygon(all_coords))
-                self.curvature.append(False) # TODO!
-                all_coords = []
-                start_point = None
+                        case Polygon():
+                            self.polygons.append(entity)
 
-        for polyline in self.elements['LWPOLYLINE']:
-            all_coords.extend(polyline.coords)
-
-            # Check if the shape is closed
-            if (polyline.coords.xy[0][0] == polyline.coords.xy[0][-1]):
-                self.polygons.append(Polygon(all_coords))
-                self.curvature.append(False) # TODO!
-                all_coords = []
-
-        for spline in self.elements['SPLINE']:
-            all_coords.extend(spline.coords)
-
-            # Check if the shape is closed
-            if len(all_coords) > 2 and all_coords[0] == all_coords[-1]:
-                self.polygons.append(Polygon(all_coords))
-                self.curvature.append(False) # TODO!
-                all_coords = []
-
-        if len(self.elements['POINTS']):
-            # Create polygons from points using convex hulls
-            points = np.array(self.elements['POINTS'])
-            hull = cv2.convexHull(points)
-
-            self.polygons.append(Polygon(hull.squeeze()))
+                        case _:
+                            if element[0] != "DIMENSION": 
+                                print("Unknown entity!")
 
         # If there are leftover lines, create a polygon from them
         if all_coords:
@@ -143,11 +121,10 @@ class Separator:
             curvature.
         """
 
-        # TODO! Make this approach automatic
-        for polygon, curved in zip(self.polygons, self.curvature):
-            if curved == True:
+        for polygon in self.polygons:
+            if self.is_curved:
                 self.create_divisions_curved(polygon)
-
+            
             else:
                 self.create_divisions_straight(polygon)
 
