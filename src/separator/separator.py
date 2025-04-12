@@ -45,7 +45,7 @@ class Separator:
         self.polygons = []
 
         # Variable holding grid size
-        self.grid_size = 10
+        self.grid_size = 25
 
         # Temporary variable telling us is polygon straight or curved
         self.is_curved = True
@@ -54,6 +54,7 @@ class Separator:
         if polygon_result != 0:
             return
         
+        # self.plot_shape()
         self.create_divisions()
 
     def create_polygon(self) -> int:
@@ -63,6 +64,7 @@ class Separator:
         """
 
         all_coords = []
+        new_coords = []
         start_point = None
 
         # Iterate through dictionary
@@ -73,9 +75,9 @@ class Separator:
                 for entity in element[1]:
                     match entity:
                         case LineString():
-                            if element[0] == "ARC" or element[0] == "LINE":
+                            if element[0] == "ARC":
                                 all_coords.extend(entity.coords)
-
+                                
                                 # Check if the shape is closed
                                 if start_point is None:
                                     start_point = entity.coords[0]
@@ -83,6 +85,18 @@ class Separator:
                                 elif Point(entity.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
                                     self.polygons.append(Polygon(all_coords))
                                     all_coords = []
+                                    start_point = None
+                                
+                            if element[0] == "LINE":
+                                new_coords.extend(entity.coords)
+                                
+                                # Check if the shape is closed
+                                if start_point is None:
+                                    start_point = entity.coords[0]
+
+                                elif Point(entity.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
+                                    self.polygons.append(Polygon(new_coords))
+                                    new_coords = []
                                     start_point = None
 
                             elif element[0] == "LWPOLYLINE":
@@ -108,9 +122,44 @@ class Separator:
                             if element[0] != "DIMENSION": 
                                 print("Unknown entity!")
 
+        # x, y = zip(*all_coords)  # Extract x and y coordinates
+        # plt.figure(figsize=(8, 8))
+        # plt.plot(x, y, color='blue', linewidth=2)
+        # plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
+        # plt.title('Polygon Plot')
+        # plt.xlabel('X')
+        # plt.ylabel('Y')
+        # plt.grid(True)
+        # plt.show()
+
+        # x, y = zip(*new_coords)  # Extract x and y coordinates
+        # plt.figure(figsize=(8, 8))
+        # plt.plot(x, y, color='blue', linewidth=2)
+        # plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
+        # plt.title('Polygon Plot')
+        # plt.xlabel('X')
+        # plt.ylabel('Y')
+        # plt.grid(True)
+        # plt.show()
+
+        # x, y = zip(*(all_coords + new_coords))  # Extract x and y coordinates
+        # plt.figure(figsize=(8, 8))
+        # plt.plot(x, y, color='blue', linewidth=2)
+        # plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
+        # plt.title('Polygon Plot')
+        # plt.xlabel('X')
+        # plt.ylabel('Y')
+        # plt.grid(True)
+        # plt.show()
+
         # If there are leftover lines, create a polygon from them
         if all_coords:
-            self.polygons.append(Polygon(all_coords))
+            all_polygon = Polygon(all_coords)
+            self.polygons.append(all_polygon)
+
+        if new_coords:
+            new_polygon = Polygon(new_coords)
+            self.polygons.append(new_polygon)
 
         return 0
     
