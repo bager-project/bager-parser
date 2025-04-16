@@ -8,6 +8,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon
+from shapely.ops import unary_union
 
 def calculate_angle(p1, p2):
     """
@@ -45,7 +46,7 @@ class Separator:
         self.polygons = []
 
         # Variable holding grid size
-        self.grid_size = 10
+        self.grid_size = 25
 
         # Temporary variable telling us is polygon straight or curved
         self.is_curved = True
@@ -62,7 +63,13 @@ class Separator:
             Shapely elements.
         """
 
-        all_coords = []
+        coords = {
+            'ARC': [],
+            'LINE': [],
+            'LWPOLYLINE': [],
+            'SPLINE': [],
+        }
+
         start_point = None
 
         # Iterate through dictionary
@@ -74,32 +81,32 @@ class Separator:
                     match entity:
                         case LineString():
                             if element[0] == "ARC" or element[0] == "LINE":
-                                all_coords.extend(entity.coords)
-
+                                coords[element[0]].extend(entity.coords)
+                                
                                 # Check if the shape is closed
                                 if start_point is None:
                                     start_point = entity.coords[0]
 
                                 elif Point(entity.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
-                                    self.polygons.append(Polygon(all_coords))
-                                    all_coords = []
+                                    self.polygons.append(Polygon(coords[element[0]]))
+                                    coords[element[0]] = []
                                     start_point = None
 
                             elif element[0] == "LWPOLYLINE":
-                                all_coords.extend(entity.coords)
+                                coords[element[0]].extend(entity.coords)
 
                                 # Check if the shape is closed
                                 if (entity.coords.xy[0][0] == entity.coords.xy[0][-1]):
-                                    self.polygons.append(Polygon(all_coords))
-                                    all_coords = []
+                                    self.polygons.append(Polygon(coords[element[0]]))
+                                    coords[element[0]] = []
 
                             elif element[0] == "SPLINE":
-                                all_coords.extend(entity.coords)
+                                coords[element[0]].extend(entity.coords)
 
                                 # Check if the shape is closed
-                                if len(all_coords) > 2 and all_coords[0] == all_coords[-1]:
-                                    self.polygons.append(Polygon(all_coords))
-                                    all_coords = []
+                                if len(coords[element[0]]) > 2 and coords[element[0]][0] == coords[element[0]][-1]:
+                                    self.polygons.append(Polygon(coords[element[0]]))
+                                    coords[element[0]] = []
 
                         case Polygon():
                             self.polygons.append(entity)
@@ -109,8 +116,14 @@ class Separator:
                                 print("Unknown entity!")
 
         # If there are leftover lines, create a polygon from them
-        if all_coords:
-            self.polygons.append(Polygon(all_coords))
+        for element in coords:
+            if len(coords[element]) != 0:
+                self.polygons.append(Polygon(coords[element]))
+
+        # TODO: Make a function to merge only those polygons that are supposed to be merged
+        merged_polygon = unary_union(self.polygons)
+        self.polygons.clear()
+        self.polygons.append(merged_polygon)
 
         return 0
     
@@ -121,6 +134,7 @@ class Separator:
             curvature.
         """
 
+        # TODO: Make this automatic
         for polygon in self.polygons:
             if self.is_curved:
                 self.create_divisions_curved(polygon)
@@ -225,14 +239,20 @@ class Separator:
         """
 
         for polygon in self.polygons:
-            x, y = polygon.exterior.xy  # Extract x and y coordinates
-            plt.figure(figsize=(8, 8))
-            plt.plot(x, y, color='blue', linewidth=2)
-            plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
-            plt.title('Polygon Plot')
-            plt.xlabel('X')
-            plt.ylabel('Y')
-            plt.grid(True)
+            if isinstance(polygon, Polygon):
+                x, y = polygon.exterior.xy  # Extract x and y coordinates
+                plt.figure(figsize=(8, 8))
+                plt.plot(x, y, color='blue', linewidth=2)
+                plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
+                plt.title('Polygon Plot')
+                plt.xlabel('X')
+                plt.ylabel('Y')
+                plt.grid(True)
+
+            elif isinstance(polygon, MultiPolygon):
+                for geom in polygon.geoms:
+                    xs, ys = geom.exterior.xy
+                    plt.fill(xs, ys, alpha=0.5, fc='r', ec='none')
 
         plt.show()
     
@@ -243,9 +263,15 @@ class Separator:
 
         fig, ax = plt.subplots()
         for polygon, division in zip(self.polygons, self.divisions):
-            # Plot the polygon
-            x, y = polygon.exterior.xy
-            ax.plot(x, y, color='black')
+            if isinstance(polygon, Polygon):
+                # Plot the polygon
+                x, y = polygon.exterior.xy
+                ax.plot(x, y, color='black')
+
+            elif isinstance(polygon, MultiPolygon):
+                for geom in polygon.geoms:
+                    xs, ys = geom.exterior.xy    
+                    ax.fill(xs, ys, alpha=0.5, fc='r', ec='none')
 
             # Plot the divisions
             for line in division:

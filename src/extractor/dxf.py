@@ -58,7 +58,7 @@ class DXF:
 
         self.path = path
     
-        # Dictionary to store all extracted Shapely elements
+        # Dictionary to store all extracted .dxf elements as Shapely elements.
         # https://ezdxf.readthedocs.io/en/stable/dxfentities/index.html
         self.elements = {
             'ARC': [],
