@@ -8,6 +8,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon
+from shapely.ops import unary_union
 
 def calculate_angle(p1, p2):
     """
@@ -21,6 +22,11 @@ def calculate_angle(p1, p2):
 
     angle = abs(math.degrees(math.atan2(dy, dx)))
     return angle
+
+def close_ring(coords):
+    if coords and coords[0] != coords[-1]:
+        return coords + [coords[0]]
+    return coords
 
 class Separator:
     """
@@ -122,44 +128,16 @@ class Separator:
                             if element[0] != "DIMENSION": 
                                 print("Unknown entity!")
 
-        # x, y = zip(*all_coords)  # Extract x and y coordinates
-        # plt.figure(figsize=(8, 8))
-        # plt.plot(x, y, color='blue', linewidth=2)
-        # plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
-        # plt.title('Polygon Plot')
-        # plt.xlabel('X')
-        # plt.ylabel('Y')
-        # plt.grid(True)
-        # plt.show()
-
-        # x, y = zip(*new_coords)  # Extract x and y coordinates
-        # plt.figure(figsize=(8, 8))
-        # plt.plot(x, y, color='blue', linewidth=2)
-        # plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
-        # plt.title('Polygon Plot')
-        # plt.xlabel('X')
-        # plt.ylabel('Y')
-        # plt.grid(True)
-        # plt.show()
-
-        # x, y = zip(*(all_coords + new_coords))  # Extract x and y coordinates
-        # plt.figure(figsize=(8, 8))
-        # plt.plot(x, y, color='blue', linewidth=2)
-        # plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
-        # plt.title('Polygon Plot')
-        # plt.xlabel('X')
-        # plt.ylabel('Y')
-        # plt.grid(True)
-        # plt.show()
-
         # If there are leftover lines, create a polygon from them
         if all_coords:
-            all_polygon = Polygon(all_coords)
-            self.polygons.append(all_polygon)
+            self.polygons.append(Polygon(close_ring(all_coords.copy())))
 
         if new_coords:
-            new_polygon = Polygon(new_coords)
-            self.polygons.append(new_polygon)
+            self.polygons.append(Polygon(close_ring(new_coords.copy())))
+
+        merged_polygon = unary_union(self.polygons)
+        self.polygons.clear()
+        self.polygons.append(merged_polygon)
 
         return 0
     
@@ -274,14 +252,20 @@ class Separator:
         """
 
         for polygon in self.polygons:
-            x, y = polygon.exterior.xy  # Extract x and y coordinates
-            plt.figure(figsize=(8, 8))
-            plt.plot(x, y, color='blue', linewidth=2)
-            plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
-            plt.title('Polygon Plot')
-            plt.xlabel('X')
-            plt.ylabel('Y')
-            plt.grid(True)
+            if isinstance(polygon, Polygon):
+                x, y = polygon.exterior.xy  # Extract x and y coordinates
+                plt.figure(figsize=(8, 8))
+                plt.plot(x, y, color='blue', linewidth=2)
+                plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
+                plt.title('Polygon Plot')
+                plt.xlabel('X')
+                plt.ylabel('Y')
+                plt.grid(True)
+
+            elif isinstance(polygon, MultiPolygon):
+                for geom in polygon.geoms:
+                    xs, ys = geom.exterior.xy
+                    plt.fill(xs, ys, alpha=0.5, fc='r', ec='none')
 
         plt.show()
     
@@ -292,9 +276,15 @@ class Separator:
 
         fig, ax = plt.subplots()
         for polygon, division in zip(self.polygons, self.divisions):
-            # Plot the polygon
-            x, y = polygon.exterior.xy
-            ax.plot(x, y, color='black')
+            if isinstance(polygon, Polygon):
+                # Plot the polygon
+                x, y = polygon.exterior.xy
+                ax.plot(x, y, color='black')
+
+            elif isinstance(polygon, MultiPolygon):
+                for geom in polygon.geoms:
+                    xs, ys = geom.exterior.xy    
+                    ax.fill(xs, ys, alpha=0.5, fc='r', ec='none')
 
             # Plot the divisions
             for line in division:
