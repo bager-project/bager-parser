@@ -23,11 +23,6 @@ def calculate_angle(p1, p2):
     angle = abs(math.degrees(math.atan2(dy, dx)))
     return angle
 
-def close_ring(coords):
-    if coords and coords[0] != coords[-1]:
-        return coords + [coords[0]]
-    return coords
-
 class Separator:
     """
         Create a polygon from extracted entities
@@ -60,7 +55,6 @@ class Separator:
         if polygon_result != 0:
             return
         
-        # self.plot_shape()
         self.create_divisions()
 
     def create_polygon(self) -> int:
@@ -69,8 +63,13 @@ class Separator:
             Shapely elements.
         """
 
-        all_coords = []
-        new_coords = []
+        coords = {
+            'ARC': [],
+            'LINE': [],
+            'LWPOLYLINE': [],
+            'SPLINE': [],
+        }
+
         start_point = None
 
         # Iterate through dictionary
@@ -81,45 +80,33 @@ class Separator:
                 for entity in element[1]:
                     match entity:
                         case LineString():
-                            if element[0] == "ARC":
-                                all_coords.extend(entity.coords)
+                            if element[0] == "ARC" or element[0] == "LINE":
+                                coords[element[0]].extend(entity.coords)
                                 
                                 # Check if the shape is closed
                                 if start_point is None:
                                     start_point = entity.coords[0]
 
                                 elif Point(entity.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
-                                    self.polygons.append(Polygon(all_coords))
-                                    all_coords = []
-                                    start_point = None
-                                
-                            if element[0] == "LINE":
-                                new_coords.extend(entity.coords)
-                                
-                                # Check if the shape is closed
-                                if start_point is None:
-                                    start_point = entity.coords[0]
-
-                                elif Point(entity.coords[-1]).distance(Point(start_point)) < 1e-6:  # Small threshold for floating-point precision
-                                    self.polygons.append(Polygon(new_coords))
-                                    new_coords = []
+                                    self.polygons.append(Polygon(coords[element[0]]))
+                                    coords[element[0]] = []
                                     start_point = None
 
                             elif element[0] == "LWPOLYLINE":
-                                all_coords.extend(entity.coords)
+                                coords[element[0]].extend(entity.coords)
 
                                 # Check if the shape is closed
                                 if (entity.coords.xy[0][0] == entity.coords.xy[0][-1]):
-                                    self.polygons.append(Polygon(all_coords))
-                                    all_coords = []
+                                    self.polygons.append(Polygon(coords[element[0]]))
+                                    coords[element[0]] = []
 
                             elif element[0] == "SPLINE":
-                                all_coords.extend(entity.coords)
+                                coords[element[0]].extend(entity.coords)
 
                                 # Check if the shape is closed
-                                if len(all_coords) > 2 and all_coords[0] == all_coords[-1]:
-                                    self.polygons.append(Polygon(all_coords))
-                                    all_coords = []
+                                if len(coords[element[0]]) > 2 and coords[element[0]][0] == coords[element[0]][-1]:
+                                    self.polygons.append(Polygon(coords[element[0]]))
+                                    coords[element[0]] = []
 
                         case Polygon():
                             self.polygons.append(entity)
@@ -129,12 +116,11 @@ class Separator:
                                 print("Unknown entity!")
 
         # If there are leftover lines, create a polygon from them
-        if all_coords:
-            self.polygons.append(Polygon(close_ring(all_coords.copy())))
+        for element in coords:
+            if len(coords[element]) != 0:
+                self.polygons.append(Polygon(coords[element]))
 
-        if new_coords:
-            self.polygons.append(Polygon(close_ring(new_coords.copy())))
-
+        # TODO: Make a function to merge only those polygons that are supposed to be merged
         merged_polygon = unary_union(self.polygons)
         self.polygons.clear()
         self.polygons.append(merged_polygon)
@@ -148,6 +134,7 @@ class Separator:
             curvature.
         """
 
+        # TODO: Make this automatic
         for polygon in self.polygons:
             if self.is_curved:
                 self.create_divisions_curved(polygon)
