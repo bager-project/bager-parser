@@ -6,13 +6,13 @@
 import colorama
 import os
 import sys
-import threading
 import toml
 
 from config.position import *
 from extractor.dxf import *
 from extractor.image import *
 from lexer.lexer import *
+from positioner.positioner import *
 from separator.separator import *
 
 if __name__ == "__main__":
@@ -48,13 +48,11 @@ if __name__ == "__main__":
         separator = Separator(elements)
 
         polygons, grids = separator.get_shapes()
+
+        positioner = Positioner(polygons, grids)
         lexer = Lexer(polygons, grids)
 
-        thread1 = threading.Thread(target=lexer.execute())
-        thread2 = threading.Thread(target=separator.plot_grid())
-
-        thread1.start()
-        thread2.start()
-
-        thread1.join()
-        thread2.join()
+        positioner.execute()
+        lexer.execute()
+        
+        separator.plot_grid()

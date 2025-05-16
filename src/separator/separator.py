@@ -72,6 +72,8 @@ class Separator:
 
         start_point = None
 
+        # TODO: Make this work when there are multiple "polyelement" polygons
+
         # Iterate through dictionary
         for element in self.elements.items():
 
