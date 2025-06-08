@@ -10,12 +10,10 @@ import toml
 
 from config.position import *
 from extractor.dxf import *
-from extractor.dxf_new import *
 from extractor.image import *
 from lexer.lexer import *
 from positioner.positioner import *
 from separator.separator import *
-from separator.separator_new import *
 
 if __name__ == "__main__":
     config_path: str = ""
@@ -40,27 +38,15 @@ if __name__ == "__main__":
 
     if (parsed_toml['extractor']['type'] == "dxf"):
         extractor = DXF(parsed_toml['paths']['dxf_path'])
-        extractor_new = DXF_NEW(parsed_toml['paths']['dxf_path'])
 
     elif (parsed_toml["extractor"]['type'] == "image"):
         extractor = Image(parsed_toml['paths']['image_path'])
-        extractor.execute()
 
     if extractor != None:
-        extractor_new.extract_entities()
-        elements_new = extractor_new.get_elements()
-
-        separator_new = Separator_NEW(elements_new)
-        polygons, grids = separator_new.get_shapes()
-
-        separator_new.plot_shape()
-
-    exit(0)
-
-    if extractor != None:
+        extractor.extract_entities()
         elements = extractor.get_elements()
-        separator = Separator(elements)
 
+        separator = Separator(elements)
         polygons, grids = separator.get_shapes()
 
         # positioner = Positioner(polygons, grids)
@@ -68,5 +54,5 @@ if __name__ == "__main__":
 
         # positioner.execute()
         lexer.execute()
-        
+
         separator.plot_grid()
