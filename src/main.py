@@ -8,7 +8,6 @@ import os
 import sys
 import toml
 
-from config.position import *
 from extractor.dxf import *
 from extractor.image import *
 from lexer.lexer import *
@@ -33,7 +32,6 @@ if __name__ == "__main__":
     parsed_toml = toml.load(config_path)
     print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
 
-    position = Position(parsed_toml['paths']['position_path'])
     extractor = None
 
     if (parsed_toml['extractor']['type'] == "dxf"):
@@ -49,10 +47,10 @@ if __name__ == "__main__":
         separator = Separator(elements)
         polygons, grids = separator.get_shapes()
 
-        # positioner = Positioner(polygons, grids)
+        positioner = Positioner(parsed_toml['paths']['position_path'], polygons, grids)
         lexer = Lexer(polygons, grids)
 
-        # positioner.execute()
+        positioner.execute()
         lexer.execute()
 
         separator.plot_grid()

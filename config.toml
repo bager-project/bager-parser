@@ -1,8 +1,8 @@
 # General config file for project documentation parser
 
 [paths]
-dxf_path = "dxf/two_bottles_no_dimensions.dxf"
-position_path = "POSITION.toml"
+dxf_path = "dxf/two_rectangles_no_dimensions.dxf"
+position_path = "position.toml"
 image_path = "image/triangle_no_dimensions.png"
 
 [extractor]
