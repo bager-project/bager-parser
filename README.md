@@ -1,4 +1,4 @@
-# B.A.G.E.R parser
+# B.A.G.E.R. parser
 This is project documentation parser for B.A.G.E.R.
 
 Parser generates AST into binary file. Raspberry Pi Pico converts AST into actual motor sequences.
@@ -23,4 +23,4 @@ B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an excavator featuring 
 | [`opencv-python`](https://pypi.org/project/opencv-python/) | [`PyQt6`](https://pypi.org/project/PyQt6/) |
 | [`shapely`](https://pypi.org/project/shapely/)             | [`toml`](https://pypi.org/project/toml/)   |
 
-- Run the program from project directory `python src/main.py`
+- Run the program from project directory `python src/main.py config.toml`

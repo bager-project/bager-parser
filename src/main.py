@@ -41,18 +41,18 @@ if __name__ == "__main__":
 
     elif (parsed_toml["extractor"]['type'] == "image"):
         extractor = Image(parsed_toml['paths']['image_path'])
-        extractor.execute()
 
     if extractor != None:
+        extractor.extract_entities()
         elements = extractor.get_elements()
-        separator = Separator(elements)
 
+        separator = Separator(elements)
         polygons, grids = separator.get_shapes()
 
-        positioner = Positioner(polygons, grids)
+        # positioner = Positioner(polygons, grids)
         lexer = Lexer(polygons, grids)
 
-        positioner.execute()
+        # positioner.execute()
         lexer.execute()
-        
+
         separator.plot_grid()

@@ -1,12 +1,12 @@
 # AUTHOR Andrej Bartulin, EndermanPC
 # PROJECT: B.A.G.E.R. parser
 # LICENSE: Polyform Shield License 1.0.0
-# DESCRIPTION: .dxf extractor entry file
+# DESCRIPTION: .dxf extractor
 
 import ezdxf
 import math
-import numpy as np
 import os
+import numpy as np
 from shapely.geometry import LineString, Point, Polygon
 
 def arc_to_linestring(center, radius, start_angle, end_angle, num_segments=64):
@@ -44,80 +44,31 @@ def create_ellipse(center, major_axis, minor_axis, start_param, end_param, resol
 
 class DXF:
     """
-        Class extracting .dxf entities and converting them into
-        a form of Shapely class.
+        Extract .dxf entities and convert them into
+        a Shapely element.
 
         Attributes:
         path(str): path to the .dxf file
     """
 
-    def __init__(self, path) -> None:
+    def __init__(self, path):
         """
             Initialize all the variables.
         """
 
         self.path = path
-    
-        # Dictionary to store all extracted .dxf elements as Shapely elements.
-        # https://ezdxf.readthedocs.io/en/stable/dxfentities/index.html
-        self.elements = {
-            'ARC': [],
-            'ATTRIB': [],
-            'BODY': [],
-            'CIRCLE': [],
-            'DIMENSION': [],
-            'ARC_DIMENSION': [],
-            'ELLIPSE': [],
-            'HATCH': [],
-            'HELIX': [],
-            'IMAGE': [],
-            'INSERT': [],
-            'LEADER': [],
-            'LINE': [],
-            'LWPOLYLINE': [],
-            'MLINE': [],
-            'MESH': [],
-            'MPOLYGON': [],
-            'MTEXT': [],
-            'MULTILEADER': [],
-            'POINT': [],
-            'POINTS': [], # this is for image extractor
-            'POLYLINE': [],
-            'VERTEX': [],
-            'RAY': [],
-            'REGION': [],
-            'SHAPE': [],
-            'SOLID': [],
-            'SPLINE': [],
-            'SURFACE': [],
-            'TEXT': [],
-            'TRACE': [],
-            'VIEWPORT': [],
-            'WIPEOUT': [],
-            'XLINE': [],
-            'UNIMPLEMENTED': [],
-        }
+        self.elements = []
 
         if not os.path.exists(path):
-            print(f"File in path {path} does not exist!")
+            print(f"File in path '{path}' does not exist!")
             print("Exiting...")
 
             exit(0)
 
-        self.doc = ezdxf.readfile(path)
+        self.doc = ezdxf.readfile(self.path)
         self.modelspace = self.doc.modelspace()
 
-        self.extract_entities()
-
-    def get_elements(self):
-        """
-            Return the dictionary containing all detected
-            .dxf elements.
-        """
-
-        return self.elements
-
-    def extract_entities(self) -> None:
+    def extract_entities(self):
         """
             Extract .dxf entities and convert them to
             Shapely geometry.
@@ -132,14 +83,14 @@ class DXF:
                     end_angle = entity.dxf.end_angle
 
                     arc = arc_to_linestring(center, radius, start_angle, end_angle)
-                    self.elements['ARC'].append(arc)
+                    self.elements.append(arc)
 
                 case 'CIRCLE':
                     center = (entity.dxf.center.x, entity.dxf.center.y)
                     radius = entity.dxf.radius
                     
                     circle = Point(center).buffer(radius, resolution=64)
-                    self.elements['CIRCLE'].append(circle)
+                    self.elements.append(circle)
 
                 case 'ELLIPSE':
                     center = (entity.dxf.center.x, entity.dxf.center.y)
@@ -158,39 +109,33 @@ class DXF:
                     minor_axis = minor_axis / minor_axis_length * major_axis_length * ratio
 
                     ellipse = create_ellipse(center, major_axis, minor_axis, start_param, end_param)
-                    self.elements['ELLIPSE'].append(ellipse)
-
-                case 'DIMENSION':
-                    self.elements['DIMENSION'].append(entity)
+                    self.elements.append(ellipse)
 
                 case 'LINE':
                     start_point = (entity.dxf.start.x, entity.dxf.start.y)
                     end_point = (entity.dxf.end.x, entity.dxf.end.y)
 
-                    self.elements['LINE'].append(LineString([start_point, end_point]))
+                    self.elements.append(LineString([start_point, end_point]))
 
                 case 'LWPOLYLINE':
                     points = [(point[0], point[1]) for point in entity]
-                    self.elements['LWPOLYLINE'].append(LineString(points))
+                    self.elements.append(LineString(points))
 
                 case 'SPLINE':
                     control_points = [(p[0], p[1]) for p in entity.control_points]
                     spline_line = LineString(control_points)
 
-                    self.elements['SPLINE'].append(spline_line)
+                    self.elements.append(spline_line)
+
+                case 'DIMENSION':
+                    pass
 
                 case _:
-                    self.elements['UNIMPLEMENTED'].append(entity)
+                    pass
 
-    # Print found entities
-    def print_entities(self) -> None:
+    def get_elements(self):
         """
-            DEBUG FUNCTION!
-
-            Print extracted .dxf entities.
+            Return Shapely elements.
         """
 
-        for element_type, entities in self.elements.items():
-            print(f"{element_type}: {len(entities)} entities found")
-            for entity in entities:
-                print(entity)
+        return self.elements
