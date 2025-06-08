@@ -9,39 +9,6 @@ import os
 import numpy as np
 from shapely.geometry import LineString, Point, Polygon
 
-def arc_to_linestring(center, radius, start_angle, end_angle, num_segments=64):
-    """
-    Convert a .dxf ARC entity into a Shapely LineString.
-    """
-    
-    # Convert start and end angles from degrees to radians
-    start_rad = math.radians(start_angle)
-    end_rad = math.radians(end_angle)
-    
-    # Handle cases where the arc crosses the 0-degree line
-    if end_rad < start_rad:
-        end_rad += 2 * math.pi
-    
-    # Generate points along the arc using a linear space of angles
-    angles = np.linspace(start_rad, end_rad, num_segments)
-    points = [(center[0] + radius * math.cos(theta), center[1] + radius * math.sin(theta)) for theta in angles]
-    
-    return LineString(points)
-
-def create_ellipse(center, major_axis, minor_axis, start_param, end_param, resolution=64):
-    """
-        Convert .dxf ELLIPSE entity into a Shapely Polygon
-    """
-    
-    # Parametric equations for an ellipse
-    theta = np.linspace(start_param, end_param, resolution)
-    x = center[0] + major_axis[0] * np.cos(theta) + minor_axis[0] * np.sin(theta)
-    y = center[1] + major_axis[1] * np.cos(theta) + minor_axis[1] * np.sin(theta)
-
-    # Create the polygon approximation of the ellipse
-    points = list(zip(x, y))
-    return Polygon(points)
-
 class DXF:
     """
         Extract .dxf entities and convert them into
@@ -82,7 +49,7 @@ class DXF:
                     start_angle = entity.dxf.start_angle
                     end_angle = entity.dxf.end_angle
 
-                    arc = arc_to_linestring(center, radius, start_angle, end_angle)
+                    arc = self.arc_to_linestring(center, radius, start_angle, end_angle)
                     self.elements.append(arc)
 
                 case 'CIRCLE':
@@ -108,7 +75,7 @@ class DXF:
                     minor_axis_length = np.linalg.norm(minor_axis)
                     minor_axis = minor_axis / minor_axis_length * major_axis_length * ratio
 
-                    ellipse = create_ellipse(center, major_axis, minor_axis, start_param, end_param)
+                    ellipse = self.create_ellipse(center, major_axis, minor_axis, start_param, end_param)
                     self.elements.append(ellipse)
 
                 case 'LINE':
@@ -132,6 +99,43 @@ class DXF:
 
                 case _:
                     pass
+
+    def arc_to_linestring(self, center, radius, start_angle, end_angle, num_segments=64):
+        """
+            INTERNAL FUNCTION!
+
+            Convert a .dxf ARC entity into a Shapely LineString.
+        """
+        
+        # Convert start and end angles from degrees to radians
+        start_rad = math.radians(start_angle)
+        end_rad = math.radians(end_angle)
+        
+        # Handle cases where the arc crosses the 0-degree line
+        if end_rad < start_rad:
+            end_rad += 2 * math.pi
+        
+        # Generate points along the arc using a linear space of angles
+        angles = np.linspace(start_rad, end_rad, num_segments)
+        points = [(center[0] + radius * math.cos(theta), center[1] + radius * math.sin(theta)) for theta in angles]
+        
+        return LineString(points)
+
+    def create_ellipse(self, center, major_axis, minor_axis, start_param, end_param, resolution=64):
+        """
+            INTERNAL FUNCTION!
+
+            Convert .dxf ELLIPSE entity into a Shapely Polygon
+        """
+        
+        # Parametric equations for an ellipse
+        theta = np.linspace(start_param, end_param, resolution)
+        x = center[0] + major_axis[0] * np.cos(theta) + minor_axis[0] * np.sin(theta)
+        y = center[1] + major_axis[1] * np.cos(theta) + minor_axis[1] * np.sin(theta)
+
+        # Create the polygon approximation of the ellipse
+        points = list(zip(x, y))
+        return Polygon(points)
 
     def get_elements(self):
         """
