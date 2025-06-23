@@ -48,9 +48,9 @@ if __name__ == "__main__":
         polygons, grids = separator.get_shapes()
 
         positioner = Positioner(parsed_toml['paths']['position_path'], polygons, grids)
-        lexer = Lexer(polygons, grids)
-
         positioner.execute()
-        lexer.execute()
+        transformed_polygons, transformed_grids = positioner.get_elements()
 
-        separator.plot_grid()
+        lexer = Lexer(transformed_polygons, transformed_grids)
+        lexer.execute()
+        lexer.plot_grid()

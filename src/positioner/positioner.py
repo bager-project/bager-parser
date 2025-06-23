@@ -6,7 +6,7 @@
 import cv2
 import numpy as np
 import os
-from shapely.geometry import Point, LineString
+from shapely import affinity
 import toml
 
 class Positioner:
@@ -35,12 +35,9 @@ class Positioner:
         self.polygons = polygons
         self.divisions = divisions
 
-        # Array holding new points for each polygon
-        self.transformed_polygons_coords = []
+        self.transformed_polygons = []
+        self.transformed_divisions = []
 
-        # Array holding new LineStrings for each division of each polygon
-        self.transformed_divisions_coords = []
-    
     def execute(self):
         """
             Transform positions.
@@ -50,68 +47,62 @@ class Positioner:
         polygon_coords = parsed_toml['gps']['polygon_coords']
         divisions_coords = parsed_toml['gps']['division_coords']
 
-        for i in range(len(self.polygons)):
-            transformed = self.transform_polygon_coords(self.polygons[i].exterior.coords, polygon_coords[i])
-            self.transformed_polygons_coords.append(transformed)
+        for i, polygon in enumerate(self.polygons):
+            new_poly_coords = polygon_coords[i]
+            transformed_poly, affine_matrix = self.transform_polygon(polygon, new_poly_coords)
+            self.transformed_polygons.append(transformed_poly)
 
-            transformed_lines = self.transform_divisions_coords(self.divisions[i], divisions_coords[i])
-            self.transformed_divisions_coords.append(transformed_lines)
+            transformed_divs = self.transform_divisions(self.divisions[i], affine_matrix)
+            self.transformed_divisions.append(transformed_divs)
 
-    def transform_polygon_coords(self, shapely_coords, toml_coords):
+    def transform_polygon(self, polygon, toml_coords):
         """
-            Transform coordinates of a given polygon.
-            Return a list of Points.
+            Transform polygon coordinates using affine transformation.
         """
 
-        n_toml = len(toml_coords)
-        n_shapely = len(shapely_coords)
+        shapely_coords = list(polygon.exterior.coords)
+        n_src = len(shapely_coords)
+        n_dst = len(toml_coords)
 
-        if n_toml < 3:
-            raise ValueError("OpenCV affine transform requires at least 3 points")
+        if n_dst < 3:
+            raise ValueError("At least 3 points are required for affine transform.")
 
-        if n_toml > n_shapely:
-            raise ValueError("More TOML points than Shapely points is unsupported")
+        if n_dst > n_src:
+            raise ValueError("TOML polygon has more points than source polygon.")
 
-        # Use first n_toml points from shapely as source, convert to float32 for OpenCV
-        src = np.array(shapely_coords[:n_toml], dtype=np.float32)
+        src = np.array(shapely_coords[:n_dst], dtype=np.float32)
         dst = np.array(toml_coords, dtype=np.float32)
 
-        # If exactly 3 points: use getAffineTransform (3x2 inputs)
-        if n_toml == 3:
-            M = cv2.getAffineTransform(src, dst)  # 2x3 matrix
+        if n_dst == 3:
+            M = cv2.getAffineTransform(src, dst)
         else:
-            # For more than 3 points, use estimateAffinePartial2D (robust affine)
             M, inliers = cv2.estimateAffinePartial2D(src, dst)
             if M is None:
-                raise RuntimeError("Failed to estimate affine transform")
+                raise RuntimeError("Affine transform could not be estimated.")
 
-        # Apply affine transform matrix M to all shapely points
-        transformed = []
-        for p in shapely_coords:
-            point = np.array([p[0], p[1], 1.0])  # homogeneous coordinate
-            x, y = M.dot(point)
-            transformed.append(Point(x, y))
+        # Convert OpenCV 2x3 matrix to Shapely-compatible flat list
+        a, b, tx = M[0]
+        d, e, ty = M[1]
+        affine_params = [a, b, d, e, tx, ty]
 
-        return transformed
+        transformed = affinity.affine_transform(polygon, affine_params)
+        return transformed, M
 
-    def transform_divisions_coords(self, linestrings, toml_start_points):
+    def transform_divisions(self, lines, M):
         """
-            Transform coordinates of a given LineStrings array.
-            Return new LineStrings.
+            Transform divisions of the polygon using same affine matrix in
+            polygon transformation.
         """
 
-        transformed_lines = []
+        a, b, tx = M[0]
+        d, e, ty = M[1]
+        affine_params = [a, b, d, e, tx, ty]
 
-        for line, toml_start in zip(linestrings, toml_start_points):
-            shapely_coords = np.array(line.coords, dtype=np.float32)
-            
-            # Calculate translation vector:
-            # Move shapely start point to toml_start
-            offset = np.array(toml_start) - shapely_coords[0]
+        return [affinity.affine_transform(line, affine_params) for line in lines]
 
-            # Translate all points by offset
-            transformed_coords = shapely_coords + offset
+    def get_elements(self):
+        """
+            Return polygons and their divisions in transformed shape.
+        """
 
-            transformed_lines.append(LineString(transformed_coords))
-
-        return transformed_lines
+        return (self.transformed_polygons, self.transformed_divisions)
