@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import os
 from shapely import affinity
+from shapely.geometry import Polygon
 import toml
 
 class Positioner:
@@ -45,10 +46,14 @@ class Positioner:
 
         parsed_toml = toml.load(self.path)
         polygon_coords = parsed_toml['gps']['polygon_coords']
+        depths = parsed_toml['heightmap']['depth']
 
         for i, polygon in enumerate(self.polygons):
             new_poly_coords = polygon_coords[i]
             transformed_poly, affine_matrix = self.transform_polygon(polygon, new_poly_coords)
+
+            # Add depth
+            transformed_poly = Polygon([(x, y, depths[i]) for x, y in transformed_poly.exterior.coords])
             self.transformed_polygons.append(transformed_poly)
 
             transformed_divs = self.transform_divisions(self.divisions[i], affine_matrix)
