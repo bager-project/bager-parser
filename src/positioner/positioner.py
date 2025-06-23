@@ -45,7 +45,6 @@ class Positioner:
 
         parsed_toml = toml.load(self.path)
         polygon_coords = parsed_toml['gps']['polygon_coords']
-        divisions_coords = parsed_toml['gps']['division_coords']
 
         for i, polygon in enumerate(self.polygons):
             new_poly_coords = polygon_coords[i]
