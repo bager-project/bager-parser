@@ -11,6 +11,7 @@
     - [x] Positioner
 - [ ] Middle end
     - [ ] Lexer
+    - [ ] AST
 - [ ] Back end
     - [ ] Interpreter
     - [ ] Real time data
