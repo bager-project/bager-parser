@@ -35,6 +35,13 @@ class DXF:
         self.doc = ezdxf.readfile(self.path)
         self.modelspace = self.doc.modelspace()
 
+    def execute(self):
+        self.extract_entities()
+
+    ###########################################################################
+    #####                                                                 #####
+    ###########################################################################
+
     def extract_entities(self):
         """
             Extract .dxf entities and convert them to
@@ -100,6 +107,17 @@ class DXF:
                 case _:
                     pass
 
+    def get_elements(self):
+        """
+            Return Shapely elements.
+        """
+
+        return self.elements
+    
+    ###########################################################################
+    #####                                                                 #####
+    ###########################################################################
+
     def arc_to_linestring(self, center, radius, start_angle, end_angle, num_segments=64):
         """
             INTERNAL FUNCTION!
@@ -136,10 +154,3 @@ class DXF:
         # Create the polygon approximation of the ellipse
         points = list(zip(x, y))
         return Polygon(points)
-
-    def get_elements(self):
-        """
-            Return Shapely elements.
-        """
-
-        return self.elements

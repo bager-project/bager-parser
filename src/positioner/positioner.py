@@ -59,8 +59,35 @@ class Positioner:
             transformed_divs = self.transform_divisions(self.divisions[i], affine_matrix)
             self.transformed_divisions.append(transformed_divs)
 
+    def get_elements(self):
+        """
+            Return polygons and their divisions in transformed shape.
+        """
+
+        return (self.transformed_polygons, self.transformed_divisions)
+
+    ###########################################################################
+    #####                                                                 #####
+    ###########################################################################
+
+    def transform_divisions(self, lines, M):
+        """
+            INTERNAL FUNCTION!
+
+            Transform divisions of the polygon using same affine matrix in
+            polygon transformation.
+        """
+
+        a, b, tx = M[0]
+        d, e, ty = M[1]
+        affine_params = [a, b, d, e, tx, ty]
+
+        return [affinity.affine_transform(line, affine_params) for line in lines]
+
     def transform_polygon(self, polygon, toml_coords):
         """
+            INTERNAL FUNCTION!
+
             Transform polygon coordinates using affine transformation.
         """
 
@@ -91,22 +118,3 @@ class Positioner:
 
         transformed = affinity.affine_transform(polygon, affine_params)
         return transformed, M
-
-    def transform_divisions(self, lines, M):
-        """
-            Transform divisions of the polygon using same affine matrix in
-            polygon transformation.
-        """
-
-        a, b, tx = M[0]
-        d, e, ty = M[1]
-        affine_params = [a, b, d, e, tx, ty]
-
-        return [affinity.affine_transform(line, affine_params) for line in lines]
-
-    def get_elements(self):
-        """
-            Return polygons and their divisions in transformed shape.
-        """
-
-        return (self.transformed_polygons, self.transformed_divisions)

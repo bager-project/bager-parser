@@ -41,10 +41,60 @@ class Separator:
         # Variable holding minimal spacing in curved segments
         self.min_spacing = 10.0
 
+    def execute(self):
         self.create_polygons()
 
         if len(self.polygons) != 0:
             self.create_divisions()
+
+    ###########################################################################
+    #####                                                                 #####
+    ###########################################################################
+
+    def create_divisions(self):
+        """
+            Divide polygons by adding division lines into
+            the `divisions` variable.
+
+            Steps:
+            1) add regular grid lines every `grid_size`,
+            2) add grid lines where the vertical difference between consecutive
+            vertices is large enough (avoids over-density on curves).
+        """
+
+        for polygon in self.polygons:
+            min_x, min_y, max_x, max_y = polygon.bounds
+
+            # 1) Regular horizontal grid lines
+            y_grid = np.arange(min_y, max_y + self.grid_size, self.grid_size)
+
+            # 2) Extract y-values from polygon where there's significant vertical change
+            coords = list(polygon.exterior.coords)
+            y_breaks = []
+            for i in range(1, len(coords)):
+                y_prev = coords[i - 1][1]
+                y_curr = coords[i][1]
+
+                if abs(y_curr - y_prev) >= self.min_spacing:
+                    y_breaks.append(y_curr)
+
+            # 3) Combine all y-values and deduplicate
+            y_combined = np.unique(np.concatenate((y_grid, y_breaks)))
+            y_combined.sort()
+
+            # 4) Generate and clip horizontal lines
+            clipped_lines = []
+            for y in y_combined:
+                line = LineString([(min_x, y), (max_x, y)])
+                intersection = polygon.intersection(line)
+                if not intersection.is_empty:
+                    if intersection.geom_type == "LineString":
+                        clipped_lines.append(intersection)
+                    elif intersection.geom_type == "MultiLineString":
+                        clipped_lines.extend(intersection.geoms)
+
+            # Store result
+            self.divisions.append(clipped_lines)
 
     def create_polygons(self):
         """
@@ -100,94 +150,35 @@ class Separator:
 
                 case _:
                     pass
-
-    def create_divisions(self):
+            
+    def get_shapes(self):
         """
-            Divide polygons by adding division lines into
-            the `divisions` variable.
-
-            Steps:
-            1) add regular grid lines every `grid_size`,
-            2) add grid lines where the vertical difference between consecutive
-            vertices is large enough (avoids over-density on curves).
+            Return polygons and their divisions.
         """
 
-        for polygon in self.polygons:
-            min_x, min_y, max_x, max_y = polygon.bounds
+        return (self.polygons, self.divisions)
 
-            # 1) Regular horizontal grid lines
-            y_grid = np.arange(min_y, max_y + self.grid_size, self.grid_size)
+    ###########################################################################
+    #####                                                                 #####
+    ###########################################################################
 
-            # 2) Extract y-values from polygon where there's significant vertical change
-            coords = list(polygon.exterior.coords)
-            y_breaks = []
-            for i in range(1, len(coords)):
-                y_prev = coords[i - 1][1]
-                y_curr = coords[i][1]
-
-                if abs(y_curr - y_prev) >= self.min_spacing:
-                    y_breaks.append(y_curr)
-
-            # 3) Combine all y-values and deduplicate
-            y_combined = np.unique(np.concatenate((y_grid, y_breaks)))
-            y_combined.sort()
-
-            # 4) Generate and clip horizontal lines
-            clipped_lines = []
-            for y in y_combined:
-                line = LineString([(min_x, y), (max_x, y)])
-                intersection = polygon.intersection(line)
-                if not intersection.is_empty:
-                    if intersection.geom_type == "LineString":
-                        clipped_lines.append(intersection)
-                    elif intersection.geom_type == "MultiLineString":
-                        clipped_lines.extend(intersection.geoms)
-
-            # Store result
-            self.divisions.append(clipped_lines)
-
-    def is_polygon_closed(self, segments, tol=1e-6):
+    def calculate_internal_angle(self, p1, p2, p3):
         """
             INTERNAL FUNCTION!
 
-            Check if given LineStrings form one closed polygon.
-            
-            Approach:
-            1. Snap all endpoints to a grid (tol) so floating imprecision doesn't split points.
-            2. Build an undirected graph where each endpoint is a node, each segment an edge.
-            3. Check every node has degree exactly 2.
-            4. Check the graph is a single connected component.
+            Calculate the internal angle at p2 formed by p1-p2-p3 in degrees.
         """
 
-        # 1) helper to quantize points
-        def key(pt):
-            return (round(pt[0]/tol)*tol, round(pt[1]/tol)*tol)
-        
-        # 2) build adjacency
-        adj = {}
-        for seg in segments:
-            coords = list(seg.coords)
-            a, b = key(coords[0]), key(coords[-1])
-            adj.setdefault(a, set()).add(b)
-            adj.setdefault(b, set()).add(a)
-        
-        # 3) every node must have exactly two neighbors
-        for node, nbrs in adj.items():
-            if len(nbrs) != 2:
-                return False
-        
-        # 4) connectivity check (simple DFS)
-        start = next(iter(adj))
-        visited = set()
-        stack = [start]
-        while stack:
-            u = stack.pop()
-            if u in visited:
-                continue
-            visited.add(u)
-            stack.extend(adj[u] - visited)
-        
-        return len(visited) == len(adj)
+        dx1 = p1[0] - p2[0]
+        dy1 = p1[1] - p2[1]
+        dx2 = p3[0] - p2[0]
+        dy2 = p3[1] - p2[1]
+
+        angle1 = math.atan2(dy1, dx1)
+        angle2 = math.atan2(dy2, dx2)
+        angle_diff = abs(angle1 - angle2)
+
+        return math.degrees(min(angle_diff, 2 * np.pi - angle_diff))
 
     def construct_polygon(self, segments, tol=1e-5):
         """
@@ -238,39 +229,6 @@ class Separator:
 
         return polygons[0]
     
-    def calculate_internal_angle(self, p1, p2, p3):
-        """
-            INTERNAL FUNCTION!
-
-            Calculate the internal angle at p2 formed by p1-p2-p3 in degrees.
-        """
-
-        dx1 = p1[0] - p2[0]
-        dy1 = p1[1] - p2[1]
-        dx2 = p3[0] - p2[0]
-        dy2 = p3[1] - p2[1]
-
-        angle1 = math.atan2(dy1, dx1)
-        angle2 = math.atan2(dy2, dx2)
-        angle_diff = abs(angle1 - angle2)
-
-        return math.degrees(min(angle_diff, 2 * np.pi - angle_diff))
-
-    def is_diagonal(self, p1, p2, slope_threshold=0.05):
-        """
-            INTERNAL FUNCTION!
-
-            Return True if segment is not approximately horizontal or vertical.
-        """
-
-        dx = p2[0] - p1[0]
-        dy = p2[1] - p1[1]
-        if dx == 0 or dy == 0:
-            return False  # horizontal or vertical
-
-        slope = abs(dy / dx)
-        return slope > slope_threshold and slope < (1 / slope_threshold)
-
     def filter_dense_y_coords(self, y_coords, min_gap=2.0):
         """
             INTERNAL FUNCTION!
@@ -289,53 +247,73 @@ class Separator:
 
         return filtered
 
-    def plot_lines(self, lines):
+    def is_diagonal(self, p1, p2, slope_threshold=0.05):
         """
-            DEBUG FUNCTION!
+            INTERNAL FUNCTION!
 
-            Plot lines.
-        """
-
-        fig, ax = plt.subplots(figsize=(8, 8))
-        for line in lines:
-            if isinstance(line, LineString):
-                x, y = line.xy  # Get the coordinates of the line
-                ax.plot(x, y, color='blue', lw=2)  # Plot the line in blue with a line width of 2
-
-        # Show the plot with the lines
-        plt.title("Detected Lines")
-        plt.gca().set_aspect('equal', adjustable='box')  # Set equal aspect ratio
-        plt.show()
-
-
-    def plot_shape(self):
-        """
-            DEBUG FUNCTION!
-
-            Plot polygons.
+            Return True if segment is not approximately horizontal or vertical.
         """
 
-        plt.figure(figsize=(8, 8))
-        for polygon in self.polygons:
-            if isinstance(polygon, Polygon):
-                x, y = polygon.exterior.xy  # Extract x and y coordinates
-                plt.plot(x, y, color='blue', linewidth=2)
-                plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
-                plt.title('Polygon Plot')
-                plt.xlabel('X')
-                plt.ylabel('Y')
-                plt.grid(True)
+        dx = p2[0] - p1[0]
+        dy = p2[1] - p1[1]
+        if dx == 0 or dy == 0:
+            return False  # horizontal or vertical
 
-            elif isinstance(polygon, MultiPolygon):
-                for geom in polygon.geoms:
-                    xs, ys = geom.exterior.xy
-                    plt.fill(xs, ys, alpha=0.5, fc='r', ec='none')
+        slope = abs(dy / dx)
+        return slope > slope_threshold and slope < (1 / slope_threshold)
+    
+    def is_polygon_closed(self, segments, tol=1e-6):
+        """
+            INTERNAL FUNCTION!
 
-        plt.show()
+            Check if given LineStrings form one closed polygon.
+            
+            Approach:
+            1. Snap all endpoints to a grid (tol) so floating imprecision doesn't split points.
+            2. Build an undirected graph where each endpoint is a node, each segment an edge.
+            3. Check every node has degree exactly 2.
+            4. Check the graph is a single connected component.
+        """
+
+        # 1) helper to quantize points
+        def key(pt):
+            return (round(pt[0]/tol)*tol, round(pt[1]/tol)*tol)
+        
+        # 2) build adjacency
+        adj = {}
+        for seg in segments:
+            coords = list(seg.coords)
+            a, b = key(coords[0]), key(coords[-1])
+            adj.setdefault(a, set()).add(b)
+            adj.setdefault(b, set()).add(a)
+        
+        # 3) every node must have exactly two neighbors
+        for node, nbrs in adj.items():
+            if len(nbrs) != 2:
+                return False
+        
+        # 4) connectivity check (simple DFS)
+        start = next(iter(adj))
+        visited = set()
+        stack = [start]
+        while stack:
+            u = stack.pop()
+            if u in visited:
+                continue
+            visited.add(u)
+            stack.extend(adj[u] - visited)
+        
+        return len(visited) == len(adj)
+
+    ###########################################################################
+    #####                                                                 #####
+    ###########################################################################
 
     def plot_grid(self) -> None:
         """
-            Plot divided polygons on the screen.
+            DEBUG FUNCTION!
+
+            Plot polygons and their divisions on the screen.
         """
 
         fig, ax = plt.subplots()
@@ -365,9 +343,45 @@ class Separator:
 
         plt.show()
 
-    def get_shapes(self):
+    def plot_lines(self, lines):
         """
-            Return polygons and their divisions.
+            DEBUG FUNCTION!
+
+            Plot lines.
         """
 
-        return (self.polygons, self.divisions)
+        fig, ax = plt.subplots(figsize=(8, 8))
+        for line in lines:
+            if isinstance(line, LineString):
+                x, y = line.xy  # Get the coordinates of the line
+                ax.plot(x, y, color='blue', lw=2)  # Plot the line in blue with a line width of 2
+
+        # Show the plot with the lines
+        plt.title("Detected Lines")
+        plt.gca().set_aspect('equal', adjustable='box')  # Set equal aspect ratio
+        plt.show()
+
+    def plot_shape(self):
+        """
+            DEBUG FUNCTION!
+
+            Plot polygons.
+        """
+
+        plt.figure(figsize=(8, 8))
+        for polygon in self.polygons:
+            if isinstance(polygon, Polygon):
+                x, y = polygon.exterior.xy  # Extract x and y coordinates
+                plt.plot(x, y, color='blue', linewidth=2)
+                plt.fill(x, y, color='lightblue', alpha=0.5)  # Optional: fill the polygon
+                plt.title('Polygon Plot')
+                plt.xlabel('X')
+                plt.ylabel('Y')
+                plt.grid(True)
+
+            elif isinstance(polygon, MultiPolygon):
+                for geom in polygon.geoms:
+                    xs, ys = geom.exterior.xy
+                    plt.fill(xs, ys, alpha=0.5, fc='r', ec='none')
+
+        plt.show()

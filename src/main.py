@@ -45,6 +45,7 @@ if __name__ == "__main__":
         elements = extractor.get_elements()
 
         separator = Separator(elements)
+        separator.execute()
         polygons, grids = separator.get_shapes()
 
         positioner = Positioner(parsed_toml['paths']['position_path'], polygons, grids)
