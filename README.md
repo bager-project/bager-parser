@@ -1,10 +1,13 @@
 # B.A.G.E.R. parser
 This is a project documentation parser for B.A.G.E.R.
 
-Parser generates AST into binary file. Raspberry Pi Pico converts AST into actual motor sequences.
+Parser parses project documentation which is either a CAD file, an image or a GIS file,
+by extracting polygons and writing them to a file which is sent to Raspberry Pi Pico.
 
 # B.A.G.E.R.
-B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an autonomous excavator robot featuring full project documentation parser. We are keen to keep human operators to oversee computers work. We are using Raspberry Pi Pico with C & C++ combination.
+B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an autonomous excavator robot featuring a full project documentation parser.
+Parser is written in Python, while B.A.G.E.R.'s movement is controlled using Raspberry Pi Pico programmed with C and C++.
+We are keen to keep human operators to oversee computer's work.
 
 ## TODO
 - [TODO](https://github.com/ringwormGO-organization/bager-parser/blob/master/TODO.md)
