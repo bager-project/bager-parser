@@ -8,11 +8,46 @@ import os
 import sys
 import toml
 
+from embedder.embedder import *
 from extractor.dxf import *
 from extractor.image import *
-from lexer.lexer import *
 from positioner.positioner import *
 from separator.separator import *
+
+def parse(parsed_toml, section_name):
+    """
+        Parse (run extractor, separator, positioner and embedder) each
+        TOML section in `config.toml`.
+    """
+
+    extractor = None
+
+    match parsed_toml[section_name]['parser_type']:
+        case "dxf":
+            extractor = DXF(parsed_toml[section_name]['path'])
+
+        case "image":
+            extractor = Image(parsed_toml[section_name]['path'])
+
+        case _:
+            pass
+
+    if extractor != None:
+        extractor.extract_entities()
+        elements = extractor.get_elements()
+
+        separator = Separator(elements)
+        separator.execute()
+        polygons, grids = separator.get_shapes()
+
+        positioner = Positioner(parsed_toml[section_name]['position_path'], 
+                                parsed_toml[section_name]['depth'], polygons, grids)
+        positioner.execute()
+        transformed_polygons, transformed_grids = positioner.get_elements()
+
+        embedder = Embedder(transformed_polygons, transformed_grids)
+        embedder.execute()
+        embedder.plot_grid()
 
 if __name__ == "__main__":
     config_path: str = ""
@@ -32,26 +67,7 @@ if __name__ == "__main__":
     parsed_toml = toml.load(config_path)
     print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
 
-    extractor = None
-
-    if (parsed_toml['extractor']['type'] == "dxf"):
-        extractor = DXF(parsed_toml['paths']['dxf_path'])
-
-    elif (parsed_toml["extractor"]['type'] == "image"):
-        extractor = Image(parsed_toml['paths']['image_path'])
-
-    if extractor != None:
-        extractor.extract_entities()
-        elements = extractor.get_elements()
-
-        separator = Separator(elements)
-        separator.execute()
-        polygons, grids = separator.get_shapes()
-
-        positioner = Positioner(parsed_toml['paths']['position_path'], polygons, grids)
-        positioner.execute()
-        transformed_polygons, transformed_grids = positioner.get_elements()
-
-        lexer = Lexer(transformed_polygons, transformed_grids)
-        lexer.execute()
-        lexer.plot_grid()
+    # Loop through each TOML section and parse it
+    for key, value in parsed_toml.items():
+        if isinstance(value, dict):
+            parse(parsed_toml, key)

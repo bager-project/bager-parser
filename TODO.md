@@ -10,6 +10,5 @@
         - [x] divisions
     - [x] Positioner
     - [ ] Embedder
-    - [ ] Converter
 - [ ] Back end
 - [ ] Final stage polishing

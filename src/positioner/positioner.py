@@ -17,21 +17,18 @@ class Positioner:
 
         Attributes:
             path(str): path to the `position.toml` file
+            depth_array(str): list defining depth for each polygon
             polygons(list): list of polygons
             divisions(list): list of lines (divisions) FOR EACH polygon
     """
 
-    def __init__(self, path, polygons, divisions):
+    def __init__(self, path, depth_array, polygons, divisions):
         """
             Initialize all the variables.
         """
 
         self.path = path
-        if not os.path.exists(path):
-            print(f"File in path '{path}' does not exist!")
-            print("Exiting...")
-
-            exit(0)
+        self.depth_array = depth_array
 
         self.polygons = polygons
         self.divisions = divisions
@@ -44,20 +41,26 @@ class Positioner:
             Transform positions.
         """
 
-        parsed_toml = toml.load(self.path)
-        polygon_coords = parsed_toml['gps']['polygon_coords']
-        depths = parsed_toml['heightmap']['depth']
+        if os.path.exists(self.path):
+            parsed_toml = toml.load(self.path)
+            polygon_coords = parsed_toml['gps']['polygon_coords']
 
-        for i, polygon in enumerate(self.polygons):
-            new_poly_coords = polygon_coords[i]
-            transformed_poly, affine_matrix = self.transform_polygon(polygon, new_poly_coords)
+            for i, polygon in enumerate(self.polygons):
+                new_poly_coords = polygon_coords[i]
+                transformed_poly, affine_matrix = self.transform_polygon(polygon, new_poly_coords)
+                self.transformed_polygons.append(transformed_poly)
 
-            # Add depth
-            transformed_poly = Polygon([(x, y, depths[i]) for x, y in transformed_poly.exterior.coords])
-            self.transformed_polygons.append(transformed_poly)
+                transformed_divs = self.transform_divisions(self.divisions[i], affine_matrix)
+                self.transformed_divisions.append(transformed_divs)
 
-            transformed_divs = self.transform_divisions(self.divisions[i], affine_matrix)
-            self.transformed_divisions.append(transformed_divs)
+        else:
+            self.transformed_polygons = self.polygons
+            self.transformed_divisions = self.divisions
+
+        # Add depth
+        for i, poly in enumerate(self.transformed_polygons):
+            transformed_poly = Polygon([(x, y, self.depth_array[i]) for x, y in poly.exterior.coords])
+            self.transformed_polygons[i] = transformed_poly
 
     def get_elements(self):
         """

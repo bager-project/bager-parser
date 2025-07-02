@@ -1,9 +1,15 @@
 # General config file for project documentation parser
 
-[paths]
-dxf_path = "dxf/two_rectangles_no_dimensions.dxf"
-position_path = "position.toml"
-image_path = "image/triangle_no_dimensions.png"
+[hole]
+    parser_type = "dxf"
+    path = "dxf/two_rectangles_no_dimensions.dxf"
+    position_path = "none"
+    depth = [100, 50]
+    hole = true
 
-[extractor]
-type = "dxf"
+[dump]
+    parser_type = "dxf"
+    path = "dxf/two_rectangles_no_dimensions.dxf"
+    position_path = "position.toml"
+    depth = [0, 0]
+    hole = false

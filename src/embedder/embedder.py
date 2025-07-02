@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 from shapely.geometry import LineString, MultiPolygon, Polygon
 from shapely.ops import split
 
-class Lexer:
+class Embedder:
     """
-        Tokenize every polygon division.
+        Embed divided polygons into a file which will be
+        passed to the Raspberry Pi Pico.
 
         Attributes:
             polygons(list): list of polygons
@@ -29,7 +30,7 @@ class Lexer:
 
     def execute(self):
         """
-            Tokenize.
+            Embed.
         """
 
         if self.debug == True:
@@ -57,7 +58,7 @@ class Lexer:
 
     def polygonize(self):
         """
-            Split all polygons in `self.polygons` 
+            Split all polygons in `self.polygons`
             into smaller polygons based on LineString divisions.
         """
         for polygon, division in zip(self.polygons, self.divisions):

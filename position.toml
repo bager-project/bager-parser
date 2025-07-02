@@ -11,6 +11,3 @@ polygon_coords = [
         [300.0, 0.0],
     ]
 ]
-
-[heightmap]
-depth = [100, 50]
