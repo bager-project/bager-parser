@@ -3,8 +3,9 @@
 # LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: Lexer entry file
 
+import math
 import matplotlib.pyplot as plt
-from shapely.geometry import LineString, MultiPolygon, Polygon
+from shapely.geometry import LineString, MultiPolygon, Polygon, box
 from shapely.ops import split
 
 class Embedder:
@@ -17,13 +18,18 @@ class Embedder:
             divisions(list): list of lines (divisions) FOR EACH polygon
     """
 
-    def __init__(self, polygons, divisions):
+    def __init__(self, polygons, divisions, parsed_toml, section_name):
         """
             Initialize all the variables.
         """
 
         self.polygons = polygons
         self.divisions = divisions
+
+        self.parsed_toml = parsed_toml
+        self.section_name: str = section_name
+
+        self.text = ""
 
         self.debug = False
         self.divided_polygons = []
@@ -46,11 +52,27 @@ class Embedder:
         
         self.polygonize()
 
+        self.text += self.section_name.upper()
+        self.text += "-"
+        self.text += str(self.parsed_toml[self.section_name]['hole']).upper()
+        self.text += "\n"
+
         for i in range(len(self.divided_polygons)):
-            print(f"--- POLYGON {i} ---: ")
+            if self.debug == True:
+                print(f"--- POLYGON {i} ---: ")
+
+            self.text += f"\tPOLYGON {i}\n"
 
             for polygon in self.divided_polygons[i]:
-                print(f"\t{polygon}")
+                if self.debug == True:
+                    print(f"\t{polygon}")
+
+                self.text += f"\t\t{polygon}\n"
+
+        print(self.text)
+
+        with open("documentation.txt", "a") as file:
+            file.write(self.text)
 
     ###########################################################################
     #####                                                                 #####
@@ -62,12 +84,43 @@ class Embedder:
             into smaller polygons based on LineString divisions.
         """
         for polygon, division in zip(self.polygons, self.divisions):
+            for i in range(len(division)):
+                division[i] = self.extend_line(division[i], polygon.bounds)
+
             result = self.split_polygons(polygon, division)
             self.divided_polygons.append(result)
 
     ###########################################################################
     #####                                                                 #####
     ###########################################################################
+
+    def extend_line(self, line, bounds, extension=1.0):
+        """
+            INTERNAL FUNCTION!
+
+            Extend a line in both directions beyond its endpoints.
+        """
+
+        (x1, y1), (x2, y2) = list(line.coords)
+
+        # Direction vector
+        dx = x2 - x1
+        dy = y2 - y1
+        length = math.hypot(dx, dy)
+
+        # Normalize direction
+        dx /= length
+        dy /= length
+
+        # Extend beyond bounds in both directions
+        minx, miny, maxx, maxy = bounds
+        diag = math.hypot(maxx - minx, maxy - miny)
+        extend_by = diag + extension
+
+        new_start = (x1 - dx * extend_by, y1 - dy * extend_by)
+        new_end   = (x2 + dx * extend_by, y2 + dy * extend_by)
+
+        return LineString([new_start, new_end])
 
     def split_polygons(self, polygon, lines):
         """

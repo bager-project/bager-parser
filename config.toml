@@ -2,7 +2,7 @@
 
 [hole]
     parser_type = "dxf"
-    path = "dxf/two_rectangles_no_dimensions.dxf"
+    path = "dxf/circle_dimensions.dxf"
     position_path = "none"
     depth = [100, 50]
     hole = true

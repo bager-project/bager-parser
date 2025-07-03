@@ -45,9 +45,9 @@ def parse(parsed_toml, section_name):
         positioner.execute()
         transformed_polygons, transformed_grids = positioner.get_elements()
 
-        embedder = Embedder(transformed_polygons, transformed_grids)
+        embedder = Embedder(transformed_polygons, transformed_grids, parsed_toml, section_name)
         embedder.execute()
-        embedder.plot_grid()
+        embedder.plot_polygons()
 
 if __name__ == "__main__":
     config_path: str = ""

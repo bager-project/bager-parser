@@ -1,6 +1,6 @@
 # B.A.G.E.R. software todo
 
-- [ ] Front end
+- [x] Front end
     - [x] Extractor
         - [x] .dxf
         - [ ] image
@@ -9,6 +9,6 @@
         - [x] polygon creation
         - [x] divisions
     - [x] Positioner
-    - [ ] Embedder
+    - [x] Embedder
 - [ ] Back end
 - [ ] Final stage polishing
