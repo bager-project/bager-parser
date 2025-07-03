@@ -138,8 +138,11 @@ class ConfigWidget(QWidget):
         self.append_button.clicked.connect(self.append_config)
         layout.addWidget(self.append_button)
 
-        self.setLayout(layout)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        # Print config button
+        self.print_button = QPushButton("Print config")
+        self.print_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.print_button.clicked.connect(self.print_config)
+        layout.addWidget(self.print_button)
 
         # Run parser button
         self.run_button = QPushButton("Run parser")
@@ -195,6 +198,24 @@ class ConfigWidget(QWidget):
 
         with open(self.config_path, "w") as file:
             toml.dump(existing_data, file)
+
+    def print_config(self):
+        if not os.path.exists(self.config_path):
+            msg_box = QMessageBox()
+            msg_box.setIcon(QMessageBox.Icon.Warning)
+            msg_box.setWindowTitle("Warning")
+            msg_box.setText(f"File in path '{config_path}' not found!\n" +
+                            f"Appending a section will create a new file.")
+            msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
+            msg_box.exec()
+
+            return
+
+        parsed_toml = toml.load(self.config_path)
+        print(colorama.Fore.LIGHTRED_EX + "B.A.G.E.R. parser" + colorama.Fore.RESET)
+
+        for key, value in parsed_toml.items():
+            print(key, value)
 
     def run_parser(self):
         """
