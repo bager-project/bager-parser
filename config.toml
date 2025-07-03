@@ -1,15 +1,13 @@
-# General config file for project documentation parser
-
 [hole]
-    parser_type = "dxf"
-    path = "dxf/circle_dimensions.dxf"
-    position_path = "none"
-    depth = [100, 50]
-    hole = true
+parser_type = "dxf"
+path = "dxf/circle_dimensions.dxf"
+position_path = "none"
+depth = [100, 50]
+hole = true
 
 [dump]
-    parser_type = "dxf"
-    path = "dxf/two_rectangles_no_dimensions.dxf"
-    position_path = "position.toml"
-    depth = [0, 0]
-    hole = false
+parser_type = "dxf"
+path = "dxf/two_rectangles_no_dimensions.dxf"
+position_path = "position.toml"
+depth = [0, 0]
+hole = false
