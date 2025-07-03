@@ -112,12 +112,30 @@ class MainWindow(QWidget):
         self.open_de_button.clicked.connect(lambda: windowDE.show())
         layout.addWidget(self.open_de_button)
 
+        self.about_button = QPushButton("About B.A.G.E.R.")
+        self.about_button.setIcon(QIcon(os.path.join(script_dir, "ui", "icons", "info.png")))
+        self.about_button.clicked.connect(self.show_about)
+        layout.addWidget(self.about_button)
+
         self.version_label = QLabel("B.A.G.E.R. Software Suite Version: v0.4.0")
         self.version_label.setStyleSheet("font-size: 16px; color: #666;")
         self.version_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.version_label)
 
         self.setLayout(layout)
+        self.setFixedSize(650, 200)
+
+    def show_about(self):
+        """
+            Shows the about dialog.
+        """
+        
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Icon.NoIcon)
+        msg_box.setWindowTitle("About B.A.G.E.R.")
+        msg_box.setText("B.A.G.E.R. Software Suite\nVersion: v0.4.0\nAuthor: Andrej Bartulin\nUI Development: NotNekodev\nDiscord Server: https://discord.gg/zyzbdrDRQF")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg_box.exec()
 
     def run_parser(self):
         """
