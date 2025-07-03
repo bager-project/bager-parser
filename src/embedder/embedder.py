@@ -41,14 +41,14 @@ class Embedder:
 
         if self.debug == True:
             for polygon, division in zip(self.polygons, self.divisions):
-                print("--- SHAPE ----: ")
-                print(polygon)
+                print("[EMBEDDER-DEBUG] --- SHAPE ----: ")
+                print("[EMBEDDER-DEBUG] " + polygon)
 
-                print("--- DIVISIONS ---: ")
+                print("[EMBEDDER-DEBUG] --- DIVISIONS ---: ")
                 for line in division:
-                    print(line)
+                    print("[EMBEDDER-DEBUG] " + line)
                 
-                print("----------------------------------------")
+                print("[EMBEDDER-DEBUG] ----------------------------------------")
         
         self.polygonize()
 
@@ -59,17 +59,17 @@ class Embedder:
 
         for i in range(len(self.divided_polygons)):
             if self.debug == True:
-                print(f"--- POLYGON {i} ---: ")
+                print(f"[EMBEDDER-DEBUG] --- POLYGON {i} ---: ")
 
             self.text += f"\tPOLYGON {i}\n"
 
             for polygon in self.divided_polygons[i]:
                 if self.debug == True:
-                    print(f"\t{polygon}")
+                    print(f"[EMBEDDER-DEBUG] \t{polygon}")
 
                 self.text += f"\t\t{polygon}\n"
 
-        print(self.text)
+        print("[EMBEDDER] " + self.text)
 
         with open("documentation.txt", "a") as file:
             file.write(self.text)

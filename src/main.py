@@ -61,7 +61,7 @@ if __name__ == "__main__":
         config_path = sys.argv[1]
 
     if not os.path.exists(config_path):
-        print(f"File in path {config_path} not found!")
+        print(f"File in path {config_path} has not been found!")
         print("Exiting...")
         
         exit(0)

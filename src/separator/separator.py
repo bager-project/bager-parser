@@ -109,16 +109,16 @@ class Separator:
         coords_array = []
 
         if self.debug == True:
-            print(f"Extracted Shapely elements: \n{self.elements}.\n")
+            print(f"[SEPARATOR-DEBUG] Extracted Shapely elements: \n{self.elements}.\n")
 
         for element in self.elements:
             match element:
                 case LineString():
                     if self.debug == True:
                         if start_point != None:
-                            print(colorama.Fore.LIGHTCYAN_EX + f"Reference: {Point(start_point)}" + colorama.Fore.RESET)
-                        print(f"Start point: {Point(element.coords[0])}")
-                        print(f"End point: {Point(element.coords[-1])}")
+                            print("[SEPARATOR-DEBUG] " + colorama.Fore.LIGHTCYAN_EX + f"Reference: {Point(start_point)}" + colorama.Fore.RESET)
+                        print(f"[SEPARATOR-DEBUG] Start point: {Point(element.coords[0])}")
+                        print(f"[SEPARATOR-DEBUG] End point: {Point(element.coords[-1])}")
 
                     # Define starting point for polygon
                     if start_point == None:
@@ -204,9 +204,9 @@ class Separator:
 
         # 0.1) Print endpoints for debugging
         if self.debug == True:
-            print("Segment endpoints:")
+            print("[SEPARATOR-DEBUG] Segment endpoints:")
             for i, seg in enumerate(segments):
-                print(f"  {i}: {seg.coords[0]} -> {seg.coords[-1]}")
+                print("[SEPARATOR-DEBUG] " + f"  {i}: {seg.coords[0]} -> {seg.coords[-1]}")
 
         # 1) Combine into MultiLineString
         multiline = MultiLineString(quantized)
@@ -221,7 +221,7 @@ class Separator:
         polygons = list(polygonize(merged))
 
         if len(polygons) != 1:
-            print(colorama.Fore.LIGHTRED_EX + f"Polygonize failed: {len(polygons)} polygons found." + colorama.Fore.RESET)
+            print("[SEPARATOR] " + colorama.Fore.LIGHTRED_EX + f"Polygonize failed: {len(polygons)} polygons found." + colorama.Fore.RESET)
 
             # visualize what we got
             if isinstance(merged, LineString):
