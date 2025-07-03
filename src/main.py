@@ -36,7 +36,9 @@ def parse(parsed_toml, section_name):
         extractor.extract_entities()
         elements = extractor.get_elements()
 
-        separator = Separator(elements)
+        separator = Separator(elements, parsed_toml[section_name]['debug'], 
+                              parsed_toml[section_name]['grid_size'], 
+                              parsed_toml[section_name]['min_spacing'])
         separator.execute()
         polygons, grids = separator.get_shapes()
 

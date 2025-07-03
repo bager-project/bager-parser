@@ -17,9 +17,12 @@ class Separator:
 
         Attributes:
             elements(list): Shapely elements
+            debug: is debug mode on
+            grid_size: size of the grid
+            min_spacing: minimum spacing between two lines in a grid
     """
 
-    def __init__(self, elements):
+    def __init__(self, elements, debug, grid_size, min_spacing):
         """
             Initialize all the variables.
         """
@@ -27,7 +30,7 @@ class Separator:
         self.elements = elements
 
         # Are we in debug mode
-        self.debug = False
+        self.debug = debug
 
         # Variable holding polygons/shapes
         self.polygons = []
@@ -36,10 +39,10 @@ class Separator:
         self.divisions = []
 
         # Variable holding grid size
-        self.grid_size = 25
+        self.grid_size = grid_size
 
         # Variable holding minimal spacing in curved segments
-        self.min_spacing = 10.0
+        self.min_spacing = min_spacing
 
     def execute(self):
         self.create_polygons()

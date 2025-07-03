@@ -6,8 +6,9 @@
 import colorama
 import os
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QLabel, QComboBox, QLineEdit,
-    QMessageBox, QVBoxLayout, QHBoxLayout, QCheckBox, QPushButton, QSizePolicy, QFileDialog
+    QApplication, QCheckBox, QComboBox, QDoubleSpinBox, QFileDialog,
+    QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QSizePolicy,
+    QSpinBox, QVBoxLayout, QWidget
 )
 import sys
 import toml
@@ -17,7 +18,6 @@ from extractor.dxf import *
 from extractor.image import *
 from positioner.positioner import *
 from separator.separator import *
-
 
 def merge_dicts(d1, d2):
     """
@@ -33,7 +33,6 @@ def merge_dicts(d1, d2):
             merge_dicts(d1[key], value)
         else:
             d1[key] = value
-
 
 def parse(parsed_toml, section_name):
     """
@@ -57,7 +56,9 @@ def parse(parsed_toml, section_name):
         extractor.extract_entities()
         elements = extractor.get_elements()
 
-        separator = Separator(elements)
+        separator = Separator(elements, parsed_toml[section_name]['debug'], 
+                              parsed_toml[section_name]['grid_size'], 
+                              parsed_toml[section_name]['min_spacing'])
         separator.execute()
         polygons, grids = separator.get_shapes()
 
@@ -66,11 +67,9 @@ def parse(parsed_toml, section_name):
         positioner.execute()
         transformed_polygons, transformed_grids = positioner.get_elements()
 
-        embedder = Embedder(transformed_polygons,
-                            transformed_grids, parsed_toml, section_name)
+        embedder = Embedder(transformed_polygons, transformed_grids, parsed_toml, section_name)
         embedder.execute()
         embedder.plot_polygons()
-
 
 class ConfigWidget(QWidget):
     """
@@ -111,14 +110,18 @@ class ConfigWidget(QWidget):
         layout.setSpacing(10)
         layout.setContentsMargins(10, 10, 10, 10)
 
+        #########################################
         # Section name
+        #########################################
         layout.addWidget(QLabel("Section name:"))
         self.section_name_input = QLineEdit()
         self.section_name_input.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(self.section_name_input)
 
+        #########################################
         # Parser type
+        #########################################
         layout.addWidget(QLabel("Parser Type:"))
         self.parser_combo = QComboBox()
         self.parser_combo.addItems(["dxf", "image", "GIS"])
@@ -127,6 +130,9 @@ class ConfigWidget(QWidget):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(self.parser_combo)
 
+        #########################################
+        # Path
+        #########################################
         layout.addWidget(QLabel("Path:"))
 
         # Create a container widget to hold QLineEdit + button horizontally
@@ -148,7 +154,9 @@ class ConfigWidget(QWidget):
 
         layout.addWidget(path_container)
 
+        #########################################
         # Position path
+        #########################################
         layout.addWidget(QLabel("Position Path:"))
 
         position_container = QWidget()
@@ -167,35 +175,86 @@ class ConfigWidget(QWidget):
 
         layout.addWidget(position_container)
 
+        #########################################
         # Depth
+        #########################################
         layout.addWidget(QLabel("Depths:"))
         self.depths_input = QLineEdit()
         self.depths_input.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(self.depths_input)
 
-        # Hole checkbox
-        self.hole_checkbox = QCheckBox("Hole")
-        self.hole_checkbox.setChecked(True)
-        self.hole_checkbox.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        layout.addWidget(self.hole_checkbox)
+        #########################################
+        # Hole and debug checkboxes
+        #########################################
+        labels_layout = QHBoxLayout()
+        labels_layout.addWidget(QLabel("Hole"))
+        labels_layout.addWidget(QLabel("Debug"))
 
+        # Second horizontal layout: checkboxes
+        checkboxes_layout = QHBoxLayout()
+
+        self.hole_checkbox = QCheckBox()
+        self.hole_checkbox.setChecked(True)
+        self.hole_checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        checkboxes_layout.addWidget(self.hole_checkbox)
+
+        self.debug_checkbox = QCheckBox()
+        self.debug_checkbox.setChecked(True)
+        self.debug_checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        checkboxes_layout.addWidget(self.debug_checkbox)
+
+        layout.addLayout(labels_layout)
+        layout.addLayout(checkboxes_layout)
+        self.setLayout(layout)
+
+        #########################################
+        # Grid size and minimum spacing
+        #########################################
+        labels_layout = QHBoxLayout()
+        labels_layout.addWidget(QLabel("Grid size:"))
+        labels_layout.addWidget(QLabel("Minimum spacing:"))
+
+        # Second horizontal layout: spin boxes
+        spinboxes_layout = QHBoxLayout()
+
+        self.grid_size_spin_box = QSpinBox()
+        self.grid_size_spin_box.setRange(0, 1000)
+        self.grid_size_spin_box.setValue(25)
+        spinboxes_layout.addWidget(self.grid_size_spin_box)
+
+        self.min_spacing_spin_box = QDoubleSpinBox()
+        self.min_spacing_spin_box.setRange(0.0, 100.0)
+        self.min_spacing_spin_box.setDecimals(2)
+        self.min_spacing_spin_box.setSingleStep(0.1)
+        self.min_spacing_spin_box.setValue(10.0)
+        spinboxes_layout.addWidget(self.min_spacing_spin_box)
+
+        layout.addLayout(labels_layout)
+        layout.addLayout(spinboxes_layout)
+        self.setLayout(layout)
+
+        #########################################
         # Append config button
+        #########################################
         self.append_button = QPushButton("Append section")
         self.append_button.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.append_button.clicked.connect(self.append_config)
         layout.addWidget(self.append_button)
 
+        #########################################
         # Print config button
+        #########################################
         self.print_button = QPushButton("Print config")
         self.print_button.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.print_button.clicked.connect(self.print_config)
         layout.addWidget(self.print_button)
 
+        #########################################
         # Run parser button
+        #########################################
         self.run_button = QPushButton("Run parser")
         self.run_button.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -231,7 +290,10 @@ class ConfigWidget(QWidget):
             "path": self.path_input.text(),
             "position_path": self.position_input.text(),
             "depth": depths_array,
-            "hole": self.hole_checkbox.isChecked()
+            "hole": self.hole_checkbox.isChecked(),
+            "debug": self.debug_checkbox.isChecked(),
+            "grid_size": self.grid_size_spin_box.value(),
+            "min_spacing": self.min_spacing_spin_box.value(),
         }
 
         new_section = {self.section_name_input.text(): dictionary}
@@ -258,7 +320,7 @@ class ConfigWidget(QWidget):
             msg_box = QMessageBox()
             msg_box.setIcon(QMessageBox.Icon.Warning)
             msg_box.setWindowTitle("Warning")
-            msg_box.setText(f"File in path '{config_path}' not found!\n" +
+            msg_box.setText(f"File in path '{config_path}' has not been found!\n" +
                             f"Appending a section will create a new file.")
             msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
             msg_box.exec()
@@ -281,7 +343,7 @@ class ConfigWidget(QWidget):
             msg_box = QMessageBox()
             msg_box.setIcon(QMessageBox.Icon.Warning)
             msg_box.setWindowTitle("Warning")
-            msg_box.setText(f"File in path '{config_path}' not found!\n" +
+            msg_box.setText(f"File in path '{config_path}' has not been found!\n" +
                             f"Appending a section will create a new file.")
             msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
             msg_box.exec()
@@ -299,7 +361,6 @@ class ConfigWidget(QWidget):
             if isinstance(value, dict):
                 parse(parsed_toml, key)
 
-
 if __name__ == "__main__":
     config_path: str = ""
     config_found = False
@@ -308,12 +369,15 @@ if __name__ == "__main__":
 
     if len(sys.argv) >= 2:
         config_path = sys.argv[1]
+
     else:
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Warning)
         msg_box.setWindowTitle("Warning")
-        msg_box.setText("No config file path was provided!\n"+
-                        "This may be unintended behavior, if you are sure that this is correct, may ignore this warning.")
+        msg_box.setText("No config file path was provided!\n" +
+                        "This may be result in unintended behavior," +
+                        "if you are sure that this is correct," +
+                        "you may ignore this warning.")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
         msg_box.exec()
 

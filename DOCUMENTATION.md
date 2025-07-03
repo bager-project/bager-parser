@@ -12,9 +12,12 @@ This file contains all the necessary information for parser to be able to parse 
     position_path = "none" # if you want to override position from the file
     depth = [100, 50] # depth of extracted polygons
     hole = true # are extracted polygons place to dig or dump soil
+    debug = false # turn debug mode on
+    grid_size = 25 # spacing between two lines in a grid (excluding breakpoints)
+    min_spacing = 10.0 # minimum spacing between two lines in a grid (used when they are too many breakpoints, e.g. curved segments of a polygon)
 ```
 
-As you see, amongst polygons from the same file, they share certain properties (e.g. `hole` property).
+As you see, polygons from the same file share certain properties (e.g. `hole` property).
 
 ## position.toml
 Currently only GPS coordinates are supported. Therefore, everything has to be under `[gps]` table. Position defining is done by creating an array of arrays of arrays.
