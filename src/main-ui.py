@@ -81,7 +81,7 @@ class MainWindow(QWidget):
 
     def __init__(self, config_path):
         """
-            Initialize all the variables.
+            Run the main window.
         """
 
         super().__init__()
@@ -89,253 +89,35 @@ class MainWindow(QWidget):
         self.config_path = config_path
 
         self.setWindowTitle("B.A.G.E.R. - Main Window")
-        self.init_ui()
-
-    def browse_path(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select a file")
-        if file_path:
-            self.path_input.setText(file_path)
-            print(f"file_path: {file_path}")
-
-    def browse_position_path(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select position file")
-        if file_path:
-            self.position_input.setText(file_path)
-            print(f"position_file_path: {file_path}")
-
-
-    def init_ui(self):
-        """
-            Run the UI.
-        """
 
         layout = QVBoxLayout()
-        layout.setSpacing(10)
-        layout.setContentsMargins(10, 10, 10, 10)
 
-        #########################################
-        # Section name
-        #########################################
-        layout.addWidget(QLabel("Section name:"))
-        self.section_name_input = QLineEdit()
-        self.section_name_input.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        layout.addWidget(self.section_name_input)
+        self.title = QLabel("B.A.G.E.R. - Main Window")
+        self.title.setStyleSheet("font-size: 48px; font-weight: bold; color: #333;")
+        self.title.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        layout.addWidget(self.title)
 
-        #########################################
-        # Parser type
-        #########################################
-        layout.addWidget(QLabel("Parser Type:"))
-        self.parser_combo = QComboBox()
-        self.parser_combo.addItems(["dxf", "image", "GIS"])
-        self.parser_combo.setCurrentText("dxf")
-        self.parser_combo.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        layout.addWidget(self.parser_combo)
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # Directory of main-ui.py
+        icon_path = os.path.join(script_dir, "ui", "icons", "play.png")
 
-        #########################################
-        # Path
-        #########################################
-        layout.addWidget(QLabel("Path:"))
+        self.run_parser_button = QPushButton("Run B.A.G.E.R. parser")
+        self.run_parser_button.setIcon(QIcon(icon_path))
+        self.run_parser_button.clicked.connect(self.run_parser)
+        layout.addWidget(self.run_parser_button)
 
-        # Create a container widget to hold QLineEdit + button horizontally
-        path_container = QWidget()
-        path_layout = QHBoxLayout()
-        # no margins for tight packing
-        path_layout.setContentsMargins(0, 0, 0, 0)
-        path_container.setLayout(path_layout)
+        icon_path = os.path.join(script_dir, "ui", "icons", "edit.png")
 
-        self.path_input = QLineEdit()
-        self.path_input.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        path_layout.addWidget(self.path_input)
+        self.open_de_button = QPushButton("Open Documentation Editor")
+        self.open_de_button.setIcon(QIcon(icon_path))
+        self.open_de_button.clicked.connect(lambda: windowDE.show())
+        layout.addWidget(self.open_de_button)
 
-        browse_button = QPushButton("...")
-        browse_button.setFixedWidth(30)
-        browse_button.clicked.connect(self.browse_path)
-        path_layout.addWidget(browse_button)
-
-        layout.addWidget(path_container)
-
-        #########################################
-        # Position path
-        #########################################
-        layout.addWidget(QLabel("Position Path:"))
-
-        position_container = QWidget()
-        position_layout = QHBoxLayout()
-        position_layout.setContentsMargins(0, 0, 0, 0)
-        position_container.setLayout(position_layout)
-
-        self.position_input = QLineEdit()
-        self.position_input.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        position_layout.addWidget(self.position_input)
-
-        position_browse_button = QPushButton("...")
-        position_browse_button.setFixedWidth(30)
-        position_browse_button.clicked.connect(self.browse_position_path)
-        position_layout.addWidget(position_browse_button)
-
-        layout.addWidget(position_container)
-
-        #########################################
-        # Depth
-        #########################################
-        layout.addWidget(QLabel("Depths:"))
-        self.depths_input = QLineEdit()
-        self.depths_input.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        layout.addWidget(self.depths_input)
-
-        #########################################
-        # Hole and debug checkboxes
-        #########################################
-        labels_layout = QHBoxLayout()
-        labels_layout.addWidget(QLabel("Hole"))
-        labels_layout.addWidget(QLabel("Debug"))
-
-        # Second horizontal layout: checkboxes
-        checkboxes_layout = QHBoxLayout()
-
-        self.hole_checkbox = QCheckBox()
-        self.hole_checkbox.setChecked(True)
-        self.hole_checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        checkboxes_layout.addWidget(self.hole_checkbox)
-
-        self.debug_checkbox = QCheckBox()
-        self.debug_checkbox.setChecked(True)
-        self.debug_checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        checkboxes_layout.addWidget(self.debug_checkbox)
-
-        layout.addLayout(labels_layout)
-        layout.addLayout(checkboxes_layout)
-        self.setLayout(layout)
-
-        #########################################
-        # Grid size and minimum spacing
-        #########################################
-        labels_layout = QHBoxLayout()
-        labels_layout.addWidget(QLabel("Grid size:"))
-        labels_layout.addWidget(QLabel("Minimum spacing:"))
-
-        # Second horizontal layout: spin boxes
-        spinboxes_layout = QHBoxLayout()
-
-        self.grid_size_spin_box = QSpinBox()
-        self.grid_size_spin_box.setRange(0, 1000)
-        self.grid_size_spin_box.setValue(25)
-        spinboxes_layout.addWidget(self.grid_size_spin_box)
-
-        self.min_spacing_spin_box = QDoubleSpinBox()
-        self.min_spacing_spin_box.setRange(0.0, 100.0)
-        self.min_spacing_spin_box.setDecimals(2)
-        self.min_spacing_spin_box.setSingleStep(0.1)
-        self.min_spacing_spin_box.setValue(10.0)
-        spinboxes_layout.addWidget(self.min_spacing_spin_box)
-
-        layout.addLayout(labels_layout)
-        layout.addLayout(spinboxes_layout)
-        self.setLayout(layout)
-
-        #########################################
-        # Append config button
-        #########################################
-        self.append_button = QPushButton("Append section")
-        self.append_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.append_button.clicked.connect(self.append_config)
-        layout.addWidget(self.append_button)
-
-        #########################################
-        # Print config button
-        #########################################
-        self.print_button = QPushButton("Print config")
-        self.print_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.print_button.clicked.connect(self.print_config)
-        layout.addWidget(self.print_button)
-
-        #########################################
-        # Run parser button
-        #########################################
-        self.run_button = QPushButton("Run parser")
-        self.run_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.run_button.clicked.connect(self.run_parser)
-        layout.addWidget(self.run_button)
+        self.version_label = QLabel("B.A.G.E.R. Software Suite Version: v0.4.0")
+        self.version_label.setStyleSheet("font-size: 16px; color: #666;")
+        self.version_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        layout.addWidget(self.version_label)
 
         self.setLayout(layout)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding,
-                           QSizePolicy.Policy.Expanding)
-
-    def append_config(self):
-        """
-            Append the new section in `config.toml`
-        """
-
-        if self.section_name_input.text() == "":
-            msg_box = QMessageBox()
-            msg_box.setIcon(QMessageBox.Icon.Warning)
-            msg_box.setWindowTitle("Warning")
-            msg_box.setText(
-                f"Section name is necessary, even in empty sections!")
-            msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
-            msg_box.exec()
-
-            return
-
-        depths_array = []
-        if self.depths_input.text() != "":
-            depths_array = list(map(int, self.depths_input.text().split(',')))
-
-        dictionary = {
-            "parser_type": self.parser_combo.currentText(),
-            "path": self.path_input.text(),
-            "position_path": self.position_input.text(),
-            "depth": depths_array,
-            "hole": self.hole_checkbox.isChecked(),
-            "debug": self.debug_checkbox.isChecked(),
-            "grid_size": self.grid_size_spin_box.value(),
-            "min_spacing": self.min_spacing_spin_box.value(),
-        }
-
-        new_section = {self.section_name_input.text(): dictionary}
-
-        # ---------------------------------------------------------------------
-
-        if not os.path.exists(self.config_path):
-            existing_data = {}
-
-            self.config_path = "config.toml"
-            with open(self.config_path, "a+") as file:
-                pass
-
-        with open(self.config_path, "r") as file:
-            existing_data = toml.load(file)
-
-        merge_dicts(existing_data, new_section)
-
-        with open(self.config_path, "w") as file:
-            toml.dump(existing_data, file)
-
-    def print_config(self):
-        if not os.path.exists(self.config_path):
-            msg_box = QMessageBox()
-            msg_box.setIcon(QMessageBox.Icon.Warning)
-            msg_box.setWindowTitle("Warning")
-            msg_box.setText(f"File in path '{config_path}' has not been found!\n" +
-                            f"Appending a section will create a new file.")
-            msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
-            msg_box.exec()
-
-            return
-
-        parsed_toml = toml.load(self.config_path)
-        print(colorama.Fore.LIGHTRED_EX +
-              "B.A.G.E.R. parser" + colorama.Fore.RESET)
-
-        for key, value in parsed_toml.items():
-            print(key, value)
 
     def run_parser(self):
         """
@@ -388,5 +170,5 @@ if __name__ == "__main__":
     window.show()
 
     windowDE = de.DEWindow(config_path)
-    windowDE.show()
+    # windowDE.show()
     app.exec()
