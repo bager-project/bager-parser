@@ -93,7 +93,14 @@ class ConfigWidget(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select a file")
         if file_path:
             self.path_input.setText(file_path)
-            print(file_path)
+            print(f"file_path: {file_path}")
+
+    def browse_position_path(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select position file")
+        if file_path:
+            self.position_input.setText(file_path)
+            print(f"position_file_path: {file_path}")
+
 
     def init_ui(self):
         """
@@ -120,12 +127,6 @@ class ConfigWidget(QWidget):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout.addWidget(self.parser_combo)
 
-        # Path
-        # layout.addWidget(QLabel("Path:"))
-        # self.path_input = QLineEdit()
-        # self.path_input.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        # layout.addWidget(self.path_input)
-
         layout.addWidget(QLabel("Path:"))
 
         # Create a container widget to hold QLineEdit + button horizontally
@@ -149,10 +150,22 @@ class ConfigWidget(QWidget):
 
         # Position path
         layout.addWidget(QLabel("Position Path:"))
+
+        position_container = QWidget()
+        position_layout = QHBoxLayout()
+        position_layout.setContentsMargins(0, 0, 0, 0)
+        position_container.setLayout(position_layout)
+
         self.position_input = QLineEdit()
-        self.position_input.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        layout.addWidget(self.position_input)
+        self.position_input.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        position_layout.addWidget(self.position_input)
+
+        position_browse_button = QPushButton("...")
+        position_browse_button.setFixedWidth(30)
+        position_browse_button.clicked.connect(self.browse_position_path)
+        position_layout.addWidget(position_browse_button)
+
+        layout.addWidget(position_container)
 
         # Depth
         layout.addWidget(QLabel("Depths:"))

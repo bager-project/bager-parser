@@ -2,19 +2,12 @@
 parser_type = "dxf"
 path = "dxf/circle_dimensions.dxf"
 position_path = "none"
-depth = [ 100, 50,]
+depth = [100, 50]
 hole = true
 
 [dump]
 parser_type = "dxf"
 path = "dxf/two_rectangles_no_dimensions.dxf"
 position_path = "position.toml"
-depth = [ 0, 0,]
+depth = [0, 0]
 hole = false
-
-[a]
-parser_type = "dxf"
-path = "/home/neko/dev/python/bager-parser/dxf/arcs_no_dimensions.dxf"
-position_path = "position.toml"
-depth = [ 100,]
-hole = true
