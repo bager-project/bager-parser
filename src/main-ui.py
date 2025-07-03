@@ -97,28 +97,20 @@ class MainWindow(QWidget):
         self.title.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.title)
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))  # Directory of main-ui.py
-        icon_path = os.path.join(script_dir, "ui", "icons", "play.png")
-
         self.run_parser_button = QPushButton("Run B.A.G.E.R. parser")
-        self.run_parser_button.setIcon(QIcon(icon_path))
         self.run_parser_button.clicked.connect(self.run_parser)
         layout.addWidget(self.run_parser_button)
 
-        icon_path = os.path.join(script_dir, "ui", "icons", "edit.png")
-
         self.open_de_button = QPushButton("Open Documentation Editor")
-        self.open_de_button.setIcon(QIcon(icon_path))
         self.open_de_button.clicked.connect(lambda: windowDE.show())
         layout.addWidget(self.open_de_button)
 
         self.about_button = QPushButton("About B.A.G.E.R.")
-        self.about_button.setIcon(QIcon(os.path.join(script_dir, "ui", "icons", "info.png")))
         self.about_button.clicked.connect(self.show_about)
         layout.addWidget(self.about_button)
 
         self.version_label = QLabel("B.A.G.E.R. Software Suite Version: v0.4.0")
-        self.version_label.setStyleSheet("font-size: 16px; color: #666;")
+        self.version_label.setStyleSheet("font-size: 15px; color: #666;")
         self.version_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.version_label)
 
@@ -177,10 +169,7 @@ if __name__ == "__main__":
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Warning)
         msg_box.setWindowTitle("Warning")
-        msg_box.setText("No config file path was provided!\n" +
-                        "This may be result in unintended behavior," +
-                        "if you are sure that this is correct," +
-                        "you may ignore this warning.")
+        msg_box.setText("There was no project documentation file provided!\n If this is intended behavior, because you want to create a new project, please disregard this message.")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
         msg_box.exec()
 
@@ -188,5 +177,4 @@ if __name__ == "__main__":
     window.show()
 
     windowDE = de.DEWindow(config_path)
-    # windowDE.show()
     app.exec()
