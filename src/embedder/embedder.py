@@ -144,7 +144,7 @@ class Embedder:
                         temp_result.append(poly)
 
                 except Exception as e:
-                    print(f"Error splitting polygon: {e}")
+                    print(f"[EMBEDDER] Error splitting polygon: {e}")
                     temp_result.append(poly)
 
             result = temp_result

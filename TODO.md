@@ -10,5 +10,6 @@
         - [x] divisions
     - [x] Positioner
     - [x] Embedder
+    - [x] UI
 - [ ] Back end
 - [ ] Final stage polishing

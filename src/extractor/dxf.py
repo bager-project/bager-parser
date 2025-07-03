@@ -27,8 +27,8 @@ class DXF:
         self.elements = []
 
         if not os.path.exists(path):
-            print(f"File in path '{path}' does not exist!")
-            print("Exiting...")
+            print(f"[EXTRACTOR-DXF] File in path '{path}' does not exist!")
+            print("[EXTRACTOR-DXF] Exiting...")
 
             exit(0)
 
