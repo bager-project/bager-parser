@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QSizePolicy,
     QSpinBox, QVBoxLayout, QWidget
 )
+from PyQt6.QtGui import QIcon
 import sys
 import toml
 
@@ -18,6 +19,8 @@ from extractor.dxf import *
 from extractor.image import *
 from positioner.positioner import *
 from separator.separator import *
+
+import ui.DocumentationEditor as de
 
 def merge_dicts(d1, d2):
     """
@@ -71,7 +74,7 @@ def parse(parsed_toml, section_name):
         embedder.execute()
         embedder.plot_polygons()
 
-class ConfigWidget(QWidget):
+class MainWindow(QWidget):
     """
         Class managing all of the widgets on the window.
     """
@@ -85,7 +88,7 @@ class ConfigWidget(QWidget):
 
         self.config_path = config_path
 
-        self.setWindowTitle("B.A.G.E.R. parser - config window")
+        self.setWindowTitle("B.A.G.E.R. - Main Window")
         self.init_ui()
 
     def browse_path(self):
@@ -381,6 +384,9 @@ if __name__ == "__main__":
         msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
         msg_box.exec()
 
-    window = ConfigWidget(config_path)
+    window = MainWindow(config_path)
     window.show()
+
+    windowDE = de.DEWindow(config_path)
+    windowDE.show()
     app.exec()

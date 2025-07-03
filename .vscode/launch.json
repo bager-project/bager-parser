@@ -8,10 +8,12 @@
             "name": "Python Debugger: Main File",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/main.py",
+            "program": "src/main-ui.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
-            "args": ["config.toml"],
+            "args": [
+                "config.toml"
+            ],
         }
     ]
 }
