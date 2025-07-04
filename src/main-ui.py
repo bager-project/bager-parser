@@ -92,7 +92,7 @@ class MainWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        self.title = QLabel("B.A.G.E.R. - Main Window")
+        self.title = QLabel("B.A.G.E.R. Parser")
         self.title.setStyleSheet("font-size: 48px; font-weight: bold; color: #333;")
         self.title.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.title)
@@ -109,7 +109,7 @@ class MainWindow(QWidget):
         self.about_button.clicked.connect(self.show_about)
         layout.addWidget(self.about_button)
 
-        self.version_label = QLabel("B.A.G.E.R. Software Suite Version: v0.4.0")
+        self.version_label = QLabel("B.A.G.E.R. Parser v0.4.0")
         self.version_label.setStyleSheet("font-size: 15px; color: #666;")
         self.version_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.version_label)
@@ -125,7 +125,7 @@ class MainWindow(QWidget):
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.NoIcon)
         msg_box.setWindowTitle("About B.A.G.E.R.")
-        msg_box.setText("B.A.G.E.R. Software Suite\nVersion: v0.4.0\nAuthor: Andrej Bartulin\nUI Development: NotNekodev\nDiscord Server: https://discord.gg/zyzbdrDRQF")
+        msg_box.setText("B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an autonomous excavator robot featuring a full project documentation parser.\nFor more information, check out main GitHub page: https://github.com/bager-project")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.exec()
 
