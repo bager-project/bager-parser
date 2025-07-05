@@ -1,13 +1,17 @@
+# AUTHOR NotNekodev
+# PROJECT: B.A.G.E.R. parser
+# LICENSE: Polyform Shield License 1.0.0
+# DESCRIPTION: Documentation editor window
+
 import os
-import toml
-from PyQt6.QtWidgets import (
-    QWidget, QTableView, QVBoxLayout, QHBoxLayout,
-    QStyledItemDelegate, QComboBox, QLineEdit, QFileDialog,
-    QSpinBox, QDoubleSpinBox, QPushButton, QSizePolicy,
-    QHeaderView, QMessageBox
-)
-from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant
+from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
 from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import (
+    QComboBox, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView,
+    QLineEdit, QMessageBox, QPushButton, QSizePolicy, QSpinBox,
+    QStyledItemDelegate, QTableView, QVBoxLayout, QWidget
+)
+import toml
 
 class DETableModel(QAbstractTableModel):
     headers = [

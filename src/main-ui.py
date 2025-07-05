@@ -1,4 +1,4 @@
-# AUTHOR Andrej Bartulin
+# AUTHOR Andrej Bartulin, NotNekodev
 # PROJECT: B.A.G.E.R. parser
 # LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: Entry file with UI
@@ -6,11 +6,9 @@
 import colorama
 import os
 from PyQt6.QtWidgets import (
-    QApplication, QCheckBox, QComboBox, QDoubleSpinBox, QFileDialog,
-    QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QSizePolicy,
-    QSpinBox, QVBoxLayout, QWidget
+    QApplication,QLabel, QMessageBox, QPushButton,
+    QSizePolicy,QVBoxLayout, QWidget
 )
-from PyQt6.QtGui import QIcon
 import sys
 import toml
 
@@ -76,7 +74,7 @@ def parse(parsed_toml, section_name):
 
 class MainWindow(QWidget):
     """
-        Class managing all of the widgets on the window.
+        Class for the main window.
     """
 
     def __init__(self, config_path):
@@ -119,13 +117,17 @@ class MainWindow(QWidget):
 
     def show_about(self):
         """
-            Shows the about dialog.
+            Show the about dialog.
         """
         
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.NoIcon)
         msg_box.setWindowTitle("About B.A.G.E.R.")
-        msg_box.setText("B.A.G.E.R. (Basic Autonomous Ground Excavation Robot) is an autonomous excavator robot featuring a full project documentation parser.\nFor more information, check out main GitHub page: https://github.com/bager-project")
+        msg_box.setText("B.A.G.E.R. (Basic Autonomous Ground Excavation Robot)" +
+                        "is an autonomous excavator robot featuring a full" +
+                        "project documentation parser.\n" +
+                        "For more information, check out" +
+                        "main GitHub page: https://github.com/bager-project")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.exec()
 
@@ -158,7 +160,6 @@ class MainWindow(QWidget):
 
 if __name__ == "__main__":
     config_path: str = ""
-    config_found = False
 
     app = QApplication(sys.argv)
 
@@ -169,7 +170,9 @@ if __name__ == "__main__":
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Warning)
         msg_box.setWindowTitle("Warning")
-        msg_box.setText("There was no project documentation file provided!\n If this is intended behavior, because you want to create a new project, please disregard this message.")
+        msg_box.setText("There was no project documentation file provided!\n" +
+                        "If this is intended behavior, because you want to" +
+                        "create a new project, please disregard this message.")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
         msg_box.exec()
 

@@ -10,7 +10,7 @@ This file contains all the necessary information for parser to be able to parse 
     parser_type = "dxf" # dxf, image and GIS values are supported
     path = "dxf/circle_dimensions.dxf" # path to the file
     position_path = "none" # if you want to override position from the file
-    depth = [100, 50] # depth of extracted polygons
+    depth = [100, 50] # depth of extracted polygons, an array
     hole = true # are extracted polygons place to dig or dump soil
     debug = false # turn debug mode on
     grid_size = 25 # spacing between two lines in a grid (excluding breakpoints)
