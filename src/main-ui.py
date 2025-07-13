@@ -109,7 +109,7 @@ class MainWindow(QWidget):
         self.about_button.clicked.connect(self.show_about)
         layout.addWidget(self.about_button)
 
-        self.version_label = QLabel("B.A.G.E.R. Parser v0.4.0")
+        self.version_label = QLabel("B.A.G.E.R. Parser v0.4.2")
         self.version_label.setStyleSheet("font-size: 15px; color: #666;")
         self.version_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.version_label)
