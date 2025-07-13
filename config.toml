@@ -3,8 +3,9 @@
 [hole]
 parser_type = "dxf"
 path = "dxf/circle_dimensions.dxf"
-position_path = "none"
-depth = [100, 50]
+coords = []
+depth = [100]
+scale = 1.0
 hole = true
 debug = false
 grid_size = 25
@@ -13,8 +14,20 @@ min_spacing = 10.0
 [dump]
 parser_type = "dxf"
 path = "dxf/two_rectangles_no_dimensions.dxf"
-position_path = "position.toml"
-depth = [0, 0]
+coords = [
+    [
+        [-100.0, 0.0],
+        [0.0, 0.0],
+        [0.0, 100.0],
+    ],
+    [
+        [200.0, -100.0],
+        [300.0, -100.0],
+        [300.0, 0.0],
+    ]
+]
+depth = []
+scale = 2.0
 hole = false
 debug = false
 grid_size = 25

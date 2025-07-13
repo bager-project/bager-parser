@@ -15,10 +15,10 @@ import toml
 
 class DETableModel(QAbstractTableModel):
     headers = [
-        "Section Name", "Parser Type", "File Path", "Position File Path",
-        "Depth", "Hole?", "Debug?", "Grid Size", "Min Spacing"
+        "Section Name", "Parser Type", "File Path", "Coords",
+        "Depth", "Scale", "Hole", "Debug", "Grid Size", "Min Spacing"
     ]
-    parser_types = ["dxf", "Image", "GIS"]
+    parser_types = ["dxf", "image", "GIS"]
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -276,8 +276,9 @@ class DEWindow(QWidget):
                 section_name,
                 values.get('parser_type', 'dxf'),
                 values.get('path', ''),
-                values.get('position_path', ''),
-                str(values.get('depth', '[0]')),
+                str(values.get('coords', '[]')),
+                str(values.get('depth', '[]')),
+                values.get('scale', 1.0),
                 values.get('hole', False),
                 values.get('debug', False),
                 values.get('grid_size', 0),
@@ -326,12 +327,13 @@ class DEWindow(QWidget):
             new_config[section_name] = {
                 'parser_type': row[1],
                 'path': row[2],
-                'position_path': row[3],
+                'coords': eval(row[3]) if row[3] else [0],
                 'depth': eval(row[4]) if row[4] else [0],
-                'hole': row[5],
-                'debug': row[6],
-                'grid_size': row[7],
-                'min_spacing': row[8]
+                'scale': row[5],
+                'hole': row[6],
+                'debug': row[7],
+                'grid_size': row[8],
+                'min_spacing': row[9]
             }
         self.local_config.update(new_config)
         with open(self.config_path, 'w') as file:

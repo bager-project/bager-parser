@@ -35,10 +35,10 @@ def merge_dicts(d1, d2):
         else:
             d1[key] = value
 
-def parse(parsed_toml, section_name):
+def parse_section(parsed_toml, section_name):
     """
-        Parse (run extractor, separator, positioner and embedder) each
-        TOML section in `config.toml`.
+        Parse (run extractor, separator, positioner and embedder) a
+        TOML section.
     """
 
     extractor = None
@@ -63,8 +63,10 @@ def parse(parsed_toml, section_name):
         separator.execute()
         polygons, grids = separator.get_shapes()
 
-        positioner = Positioner(parsed_toml[section_name]['position_path'],
-                                parsed_toml[section_name]['depth'], polygons, grids)
+        positioner = Positioner(parsed_toml[section_name]['coords'],
+                                parsed_toml[section_name]['depth'], 
+                                parsed_toml[section_name]['scale'],
+                                polygons, grids)
         positioner.execute()
         transformed_polygons, transformed_grids = positioner.get_elements()
 
@@ -156,7 +158,7 @@ class MainWindow(QWidget):
         # Loop through each TOML section and parse it
         for key, value in parsed_toml.items():
             if isinstance(value, dict):
-                parse(parsed_toml, key)
+                parse_section(parsed_toml, key)
 
 if __name__ == "__main__":
     config_path: str = ""

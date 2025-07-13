@@ -5,7 +5,7 @@
 
 import math
 import matplotlib.pyplot as plt
-from shapely.geometry import LineString, MultiPolygon, Polygon, box
+from shapely.geometry import LineString, MultiPolygon, Polygon
 from shapely.ops import split
 
 class Embedder:

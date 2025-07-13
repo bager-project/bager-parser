@@ -10,7 +10,20 @@ This file contains all the necessary information for parser to be able to parse 
     parser_type = "dxf" # dxf, image and GIS values are supported
     path = "dxf/circle_dimensions.dxf" # path to the file
     position_path = "none" # if you want to override position from the file
+    coords = [
+        [
+            [-100.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 100.0],
+        ],
+        [
+            [200.0, -100.0],
+            [300.0, -100.0],
+            [300.0, 0.0],
+        ]
+    ] # an array of arrays of new polygon coordinates, only first 3 points are enough to override, rest of points are automatically calculated
     depth = [100, 50] # depth of extracted polygons, an array
+    scale = 2.0 # scale coefficient for all polygons
     hole = true # are extracted polygons place to dig or dump soil
     debug = false # turn debug mode on
     grid_size = 25 # spacing between two lines in a grid (excluding breakpoints)
@@ -18,28 +31,6 @@ This file contains all the necessary information for parser to be able to parse 
 ```
 
 As you see, polygons from the same file share certain properties (e.g. `hole` property).
-
-## position.toml
-Currently only GPS coordinates are supported. Therefore, everything has to be under `[gps]` table. Position defining is done by creating an array of arrays of arrays.
-
-First array which MUST be called `polygon_coords`. For each extracted polygon there is an array. Final array is an array of AT LEAST 3 consecutive new coordinates. Rest of the coordinates will be automatically calculated.
-
-Example:
-```toml
-[gps]
-polygon_coords = [
-    [
-        [-100.0, 0.0],
-        [0.0, 0.0],
-        [0.0, 100.0],
-    ],
-    [
-        [200.0, -100.0],
-        [300.0, -100.0],
-        [300.0, 0.0],
-    ]
-]
-```
 
 ## documentation.txt
 Following design is applied:
