@@ -61,8 +61,8 @@ class Positioner:
             # need to print an error message
             if len(self.coords) > 0:
                 print("[POSITIONER] Length of `coords` array does not match" +
-                      "number of polygons! Ignoring coordinates" +
-                      "transformation process.")
+                      " number of polygons! Ignoring coordinates" +
+                      " transformation process.")
 
         #########################################
         # Scale
@@ -94,8 +94,8 @@ class Positioner:
             # print an error message
             if len(self.depth_array) > 0:
                 print("[POSITIONER] Length of `depth` array does not match" +
-                      "number of polygons! Defaulting depth for all" +
-                      "polygons to zero.")
+                      " number of polygons! Defaulting depth for all" +
+                      " polygons to zero.")
 
             self.depth_array = []
             for i in range(len(self.transformed_polygons)):
@@ -143,11 +143,11 @@ class Positioner:
 
         if n_dst < 3:
             raise ValueError("[POSITIONER] At least 3 points are required" +
-                             "for an affine transform.")
+                             " for an affine transform.")
 
         if n_dst > n_src:
             raise ValueError("[POSITIONER] TOML polygon has more points" +
-                             "than the source polygon.")
+                             " than the source polygon.")
 
         src = np.asarray(src_coords[:n_dst], dtype=float)
         dst = np.asarray(toml_coords, dtype=float)
@@ -170,7 +170,7 @@ class Positioner:
         p, *_ = np.linalg.lstsq(A, b, rcond=None)
         if np.linalg.matrix_rank(A) < 6:
             raise RuntimeError("[POSITIONER] Control points are degenerate;" +
-                               "rank-deficient system.")
+                               " rank-deficient system.")
 
         # Round numbers if they are within the tolerance range
         for i, coef in enumerate(p):

@@ -109,7 +109,7 @@ class MainWindow(QWidget):
         self.about_button.clicked.connect(self.show_about)
         layout.addWidget(self.about_button)
 
-        self.version_label = QLabel("B.A.G.E.R. Parser v0.4.2")
+        self.version_label = QLabel("B.A.G.E.R. Parser v0.4.3")
         self.version_label.setStyleSheet("font-size: 15px; color: #666;")
         self.version_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.version_label)
@@ -126,10 +126,10 @@ class MainWindow(QWidget):
         msg_box.setIcon(QMessageBox.Icon.NoIcon)
         msg_box.setWindowTitle("About B.A.G.E.R.")
         msg_box.setText("B.A.G.E.R. (Basic Autonomous Ground Excavation Robot)" +
-                        "is an autonomous excavator robot featuring a full" +
-                        "project documentation parser.\n" +
+                        " is an autonomous excavator robot featuring a full" +
+                        " project documentation parser.\n" +
                         "For more information, check out" +
-                        "main GitHub page: https://github.com/bager-project")
+                        " main GitHub page: https://github.com/bager-project")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.exec()
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         msg_box.setWindowTitle("Warning")
         msg_box.setText("There was no project documentation file provided!\n" +
                         "If this is intended behavior, because you want to" +
-                        "create a new project, please disregard this message.")
+                        " create a new project, please disregard this message.")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Close)
         msg_box.exec()
 
