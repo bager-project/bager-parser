@@ -16,6 +16,8 @@ class Embedder:
         Attributes:
             polygons(list): list of polygons
             divisions(list): list of lines (divisions) FOR EACH polygon
+            parsed_toml(dict): parsed TOML file
+            section_name(str): name of the current TOML section / table we are parsing
     """
 
     def __init__(self, polygons, divisions, parsed_toml, section_name):

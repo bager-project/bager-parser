@@ -3,12 +3,10 @@
 # LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: Separator
 
-import colorama
-import math
+from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
-from shapely.geometry import LineString, MultiLineString, MultiPolygon, Point, Polygon
-from shapely.ops import linemerge, polygonize, snap
+from shapely.geometry import LineString, MultiPolygon, Polygon
 
 class Separator:
     """
@@ -60,9 +58,9 @@ class Separator:
             the `divisions` variable.
 
             Steps:
-            1) add regular grid lines every `grid_size`,
-            2) add grid lines where the vertical difference between consecutive
-            vertices is large enough (avoids over-density on curves).
+                1) add regular grid lines every `grid_size`,
+                2) add grid lines where the vertical difference between consecutive
+                vertices is large enough (avoids over-density on curves).
         """
 
         for polygon in self.polygons:
@@ -104,9 +102,7 @@ class Separator:
             Create a polygon from Shapely elements.
         """
 
-        start_point = None
-        elements_array = []
-        coords_array = []
+        elements_linestring = []
 
         if self.debug == True:
             print(f"[SEPARATOR-DEBUG] Extracted Shapely elements: \n{self.elements}.\n")
@@ -114,46 +110,17 @@ class Separator:
         for element in self.elements:
             match element:
                 case LineString():
-                    if self.debug == True:
-                        if start_point != None:
-                            print("[SEPARATOR-DEBUG] " + colorama.Fore.LIGHTCYAN_EX + f"Reference: {Point(start_point)}" + colorama.Fore.RESET)
-                        print(f"[SEPARATOR-DEBUG] Start point: {Point(element.coords[0])}")
-                        print(f"[SEPARATOR-DEBUG] End point: {Point(element.coords[-1])}")
-
-                    # Define starting point for polygon
-                    if start_point == None:
-                        start_point = element.coords[0]
-
-                    elements_array.append(element)
-                    coords_array.extend(element.coords)
-
-                    # Perform different checks to see if polygon is closed
-                    if self.is_polygon_closed(elements_array) == True: # for multiple LineStrings
-                        poly = self.construct_polygon(elements_array)
-
-                        if poly != 1:
-                            self.polygons.append(poly)
-
-                    elif Point(element.coords[-1]).distance(Point(start_point)) < 1e-6: # for single LineString
-                        self.polygons.append(Polygon(coords_array))
-
-                    elif len(element.coords) == 4: # for LWPOLYLINE
-                        if element.coords.xy[0][0] == element.coords.xy[0][-1]:
-                            self.polygons.append(Polygon(coords_array))
-
-                    else:
-                        continue
-
-                    start_point = None
-                    elements_array = []
-                    coords_array = []
+                    elements_linestring.append(element)
                 
                 case Polygon():
                     self.polygons.append(element)
 
                 case _:
                     pass
-            
+
+        segments = self.linestrings_to_segments(elements_linestring)
+        self.polygons.extend(self.find_polygons(segments))
+
     def get_shapes(self):
         """
             Return polygons and their divisions.
@@ -165,148 +132,111 @@ class Separator:
     #####                                                                 #####
     ###########################################################################
 
-    def calculate_internal_angle(self, p1, p2, p3):
+    def build_adjacency(self, lines):
         """
             INTERNAL FUNCTION!
 
-            Calculate the internal angle at p2 formed by p1-p2-p3 in degrees.
+            Build an adjacency list mapping each endpoint to connected lines
+            and their opposite endpoints.
         """
 
-        dx1 = p1[0] - p2[0]
-        dy1 = p1[1] - p2[1]
-        dx2 = p3[0] - p2[0]
-        dy2 = p3[1] - p2[1]
+        adj = defaultdict(list)
+        for idx, line in enumerate(lines):
+            p1r = self.round_point(tuple(line.coords[0]))
+            p2r = self.round_point(tuple(line.coords[-1]))
 
-        angle1 = math.atan2(dy1, dx1)
-        angle2 = math.atan2(dy2, dx2)
-        angle_diff = abs(angle1 - angle2)
+            adj[p1r].append((idx, p2r))
+            adj[p2r].append((idx, p1r))
 
-        return math.degrees(min(angle_diff, 2 * np.pi - angle_diff))
+        return adj
 
-    def construct_polygon(self, segments, tol=1e-5):
+    def canonical_ring_key(self, coords):
         """
             INTERNAL FUNCTION!
 
-            Construct a single closed polygon from possibly unordered, imprecise segments.
-
-            This version first rounds every vertex of every segment to the nearest grid
-            of size tol, so endpoints that lie within tol snap exactly together.
+            Get canonical form of ring to avoid duplicates.
         """
 
-        # 0) Quantize each segment’s coords to the tol‐grid
-        quantized = []
-        for seg in segments:
-            new_coords = [
-                (round(x / tol) * tol, round(y / tol) * tol)
-                for x, y in seg.coords
-            ]
-            quantized.append(LineString(new_coords))
+        coords = coords[:-1] if coords[0] == coords[-1] else coords
+        n = len(coords)
 
-        # 0.1) Print endpoints for debugging
-        if self.debug == True:
-            print("[SEPARATOR-DEBUG] Segment endpoints:")
-            for i, seg in enumerate(segments):
-                print("[SEPARATOR-DEBUG] " + f"  {i}: {seg.coords[0]} -> {seg.coords[-1]}")
+        rotations = [tuple(coords[i:] + coords[:i]) for i in range(n)]
+        rotations_rev = [tuple(reversed(r)) for r in rotations]
 
-        # 1) Combine into MultiLineString
-        multiline = MultiLineString(quantized)
+        return min(rotations + rotations_rev)
 
-        # 2) Snap to itself to close any remaining tiny gaps
-        multiline = snap(multiline, multiline, tol)
+    def find_polygons(self, lines):
+        """
+            INTERNAL FUNCTION!
 
-        # 3) Merge lines
-        merged = linemerge(multiline)
+            Find all closed, non intersecting polygons in array of
+            `LineString` objects.
+        """
 
-        # 4) Polygonize
-        polygons = list(polygonize(merged))
+        # Ensure lines are LineStrings
+        adj = self.build_adjacency(lines)
+        polygons = []
+        seen_polygons = set()
 
-        if len(polygons) != 1:
-            print("[SEPARATOR] " + colorama.Fore.LIGHTRED_EX + f"Polygonize failed: {len(polygons)} polygons found." + colorama.Fore.RESET)
+        def dfs(path, used_edges):
+            """
+                Perform DFS algorithm to find neighboring lines.
+            """
 
-            # visualize what we got
-            if isinstance(merged, LineString):
-                merged = [merged]
+            current = self.round_point(path[-1])
+            for idx, neighbor in adj[current]:
+                if idx in used_edges:
+                    continue
 
-            self.plot_lines(merged)
-            return 1
+                used_edges.add(idx)
+                path.append(neighbor)
 
-        return polygons[0]
+                if neighbor == path[0] and len(path) >= 4:
+                    ring = path[:]
+                    polygon = Polygon(ring)
+
+                    if polygon.is_valid and polygon.is_simple:
+                        key = self.canonical_ring_key(ring)
+                        if key not in seen_polygons:
+                            seen_polygons.add(key)
+                            polygons.append(polygon)
+
+                elif neighbor not in path[:-1]:
+                    dfs(path, used_edges)
+
+                path.pop()
+                used_edges.remove(idx)
+
+        for idx, line in enumerate(lines):
+            p1r = self.round_point(tuple(line.coords[0]))
+            p2r = self.round_point(tuple(line.coords[-1]))
+            dfs([p1r, p2r], {idx})
+
+        return polygons
     
-    def filter_dense_y_coords(self, y_coords, min_gap=2.0):
+    def linestrings_to_segments(self, lines):
         """
             INTERNAL FUNCTION!
 
-            Filter out y-values that are too close to each other.
+            Convert `LineString` objects into segments.
         """
+        segments = []
+        for line in lines:
+            coords = list(line.coords)
+            for i in range(len(coords) - 1):
+                segments.append(LineString([coords[i], coords[i + 1]]))
 
-        y_coords = sorted(set(y_coords))
-        filtered = []
-        last_y = None
-
-        for y in y_coords:
-            if last_y is None or abs(y - last_y) >= min_gap:
-                filtered.append(y)
-                last_y = y
-
-        return filtered
-
-    def is_diagonal(self, p1, p2, slope_threshold=0.05):
-        """
-            INTERNAL FUNCTION!
-
-            Return True if segment is not approximately horizontal or vertical.
-        """
-
-        dx = p2[0] - p1[0]
-        dy = p2[1] - p1[1]
-        if dx == 0 or dy == 0:
-            return False  # horizontal or vertical
-
-        slope = abs(dy / dx)
-        return slope > slope_threshold and slope < (1 / slope_threshold)
+        return segments
     
-    def is_polygon_closed(self, segments, tol=1e-6):
+    def round_point(self, pt):
         """
             INTERNAL FUNCTION!
 
-            Check if given LineStrings form one closed polygon.
-            
-            Approach:
-            1. Snap all endpoints to a grid (tol) so floating imprecision doesn't split points.
-            2. Build an undirected graph where each endpoint is a node, each segment an edge.
-            3. Check every node has degree exactly 2.
-            4. Check the graph is a single connected component.
+            Round a point.
         """
 
-        # 1) helper to quantize points
-        def key(pt):
-            return (round(pt[0]/tol)*tol, round(pt[1]/tol)*tol)
-        
-        # 2) build adjacency
-        adj = {}
-        for seg in segments:
-            coords = list(seg.coords)
-            a, b = key(coords[0]), key(coords[-1])
-            adj.setdefault(a, set()).add(b)
-            adj.setdefault(b, set()).add(a)
-        
-        # 3) every node must have exactly two neighbors
-        for node, nbrs in adj.items():
-            if len(nbrs) != 2:
-                return False
-        
-        # 4) connectivity check (simple DFS)
-        start = next(iter(adj))
-        visited = set()
-        stack = [start]
-        while stack:
-            u = stack.pop()
-            if u in visited:
-                continue
-            visited.add(u)
-            stack.extend(adj[u] - visited)
-        
-        return len(visited) == len(adj)
+        precision = 6
+        return (round(pt[0], precision), round(pt[1], precision))
 
     ###########################################################################
     #####                                                                 #####

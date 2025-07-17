@@ -93,7 +93,7 @@ class DXF:
 
                 case 'LWPOLYLINE':
                     points = [(point[0], point[1]) for point in entity]
-                    self.elements.append(LineString(points))
+                    self.elements.append(Polygon(points))
 
                 case 'SPLINE':
                     control_points = [(p[0], p[1]) for p in entity.control_points]
@@ -143,7 +143,7 @@ class DXF:
         """
             INTERNAL FUNCTION!
 
-            Convert .dxf ELLIPSE entity into a Shapely Polygon
+            Convert .dxf ELLIPSE entity into a Shapely Polygon.
         """
         
         # Parametric equations for an ellipse
