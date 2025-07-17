@@ -3,13 +3,12 @@
 This document features documentation on how to use config files.
 
 ## config.toml
-This file contains all the necessary information for parser to be able to parse the project documentation. Config file is divided into tables (sections) for easier organization. Each section MUST look like this:
+This file contains all the necessary information for the parser to be able to parse the project documentation. Config file is divided into tables (sections) for easier organization. Each section MUST look like this:
 
 ```toml
 [name_of_the_table]
     parser_type = "dxf" # dxf, image and GIS values are supported
-    path = "dxf/circle_dimensions.dxf" # path to the file
-    position_path = "none" # if you want to override position from the file
+    path = "dxf/two_rectangles_no_dimensions.dxf" # path to the file
     coords = [
         [
             [-100.0, 0.0],
@@ -21,8 +20,9 @@ This file contains all the necessary information for parser to be able to parse 
             [300.0, -100.0],
             [300.0, 0.0],
         ]
-    ] # an array of arrays of new polygon coordinates, only first 3 points are enough to override, rest of points are automatically calculated
-    depth = [100, 50] # depth of extracted polygons, an array
+    ] # first level array holds arrays for each polygon, second level array holds arrays where an array is a coordinate of a single line; only first 3 points are enough to override, rest of points are automatically calculated
+
+    depth = [100, 50] # depth of extracted polygons, an array for each polygon
     scale = 2.0 # scale coefficient for all polygons
     hole = true # are extracted polygons place to dig or dump soil
     debug = false # turn debug mode on
