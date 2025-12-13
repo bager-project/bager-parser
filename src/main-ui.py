@@ -15,6 +15,7 @@ import toml
 from embedder.embedder import *
 from extractor.dxf import *
 from extractor.image import *
+from extractor.gis import *
 from positioner.positioner import *
 from separator.separator import *
 
@@ -49,6 +50,9 @@ def parse_section(parsed_toml, section_name):
 
         case "image":
             extractor = Image(parsed_toml[section_name]['path'])
+
+        case "GIS":
+            extractor = GIS(parsed_toml[section_name]['path'])
 
         case _:
             pass
