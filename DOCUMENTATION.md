@@ -9,6 +9,8 @@ This file contains all the necessary information for the parser to be able to pa
 [name_of_the_table]
     parser_type = "dxf" # dxf, image and GIS values are supported
     path = "dxf/two_rectangles_no_dimensions.dxf" # path to the file
+    remove_colinear = false # merge colinear points in a polygon, used only by image extractor
+    simplify_tolerance = 0.0 # threshold value controlling the level of simplification, used only by image extractor
     coords = [
         [
             [-100.0, 0.0],
@@ -20,7 +22,7 @@ This file contains all the necessary information for the parser to be able to pa
             [300.0, -100.0],
             [300.0, 0.0],
         ]
-    ] # first level array holds arrays for each polygon, second level array holds arrays where an array is a coordinate of a single line; only first 3 points are enough to override, rest of points are automatically calculated
+    ] # first level array holds arrays for each polygon, second level array holds arrays where an array is a coordinate of a single point; only first 3 points are enough to override, rest of points are automatically calculated
 
     depth = [100, 50] # depth of extracted polygons, an array for each polygon
     scale = 2.0 # scale coefficient for all polygons

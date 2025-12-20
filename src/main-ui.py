@@ -14,8 +14,8 @@ import toml
 
 from embedder.embedder import *
 from extractor.dxf import *
-from extractor.image import *
 from extractor.gis import *
+from extractor.image import *
 from positioner.positioner import *
 from separator.separator import *
 
@@ -38,8 +38,10 @@ def merge_dicts(d1, d2):
 
 def parse_section(parsed_toml, section_name):
     """
-        Parse (run extractor, separator, positioner and embedder) a
-        TOML section.
+        Parse (run extractor, separator, positioner and embedder) a TOML section.
+        
+        :param dict parsed_toml: parsed contents of the TOML file
+        :param str section_name: name of the section to be parsed 
     """
 
     extractor = None
@@ -49,7 +51,10 @@ def parse_section(parsed_toml, section_name):
             extractor = DXF(parsed_toml[section_name]['path'])
 
         case "image":
-            extractor = Image(parsed_toml[section_name]['path'])
+            extractor = Image(parsed_toml[section_name]['path'],
+                              parsed_toml[section_name]['debug'],
+                              parsed_toml[section_name]['simplify_tolerance'],
+                              parsed_toml[section_name]['remove_colinear'])
 
         case "GIS":
             extractor = GIS(parsed_toml[section_name]['path'])
@@ -61,14 +66,14 @@ def parse_section(parsed_toml, section_name):
         extractor.extract_entities()
         elements = extractor.get_elements()
 
-        separator = Separator(elements, parsed_toml[section_name]['debug'], 
-                              parsed_toml[section_name]['grid_size'], 
+        separator = Separator(elements, parsed_toml[section_name]['debug'],
+                              parsed_toml[section_name]['grid_size'],
                               parsed_toml[section_name]['min_spacing'])
         separator.execute()
         polygons, grids = separator.get_shapes()
 
         positioner = Positioner(parsed_toml[section_name]['coords'],
-                                parsed_toml[section_name]['depth'], 
+                                parsed_toml[section_name]['depth'],
                                 parsed_toml[section_name]['scale'],
                                 polygons, grids)
         positioner.execute()
@@ -81,6 +86,7 @@ def parse_section(parsed_toml, section_name):
 class MainWindow(QWidget):
     """
         Class for the main window.
+        :param str config_path: path to the config file
     """
 
     def __init__(self, config_path):
@@ -96,7 +102,7 @@ class MainWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        self.title = QLabel("B.A.G.E.R. Parser")
+        self.title = QLabel("B.A.G.E.R. parser")
         self.title.setStyleSheet("font-size: 48px; font-weight: bold; color: #333;")
         self.title.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.title)
@@ -105,7 +111,7 @@ class MainWindow(QWidget):
         self.run_parser_button.clicked.connect(self.run_parser)
         layout.addWidget(self.run_parser_button)
 
-        self.open_de_button = QPushButton("Open Documentation Editor")
+        self.open_de_button = QPushButton("Open documentation editor")
         self.open_de_button.clicked.connect(lambda: windowDE.show())
         layout.addWidget(self.open_de_button)
 
@@ -113,7 +119,7 @@ class MainWindow(QWidget):
         self.about_button.clicked.connect(self.show_about)
         layout.addWidget(self.about_button)
 
-        self.version_label = QLabel("B.A.G.E.R. Parser v0.4.3")
+        self.version_label = QLabel("B.A.G.E.R. parser v0.4.4")
         self.version_label.setStyleSheet("font-size: 15px; color: #666;")
         self.version_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.version_label)

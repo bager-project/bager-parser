@@ -15,8 +15,8 @@ import toml
 
 class DETableModel(QAbstractTableModel):
     headers = [
-        "Section Name", "Parser Type", "File Path", "Coords",
-        "Depth", "Scale", "Hole", "Debug", "Grid Size", "Min Spacing"
+        "Section Name", "Parser Type", "File Path", "Remove colinear", "Simplify tolerance",
+        "Coords", "Depth", "Scale", "Hole", "Debug", "Grid Size", "Min Spacing"
     ]
     parser_types = ["dxf", "image", "GIS"]
 
@@ -54,7 +54,7 @@ class DETableModel(QAbstractTableModel):
             return Qt.ItemFlag.NoItemFlags
         col = index.column()
         flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
-        if col in [5, 6]:
+        if col in [3, 8, 9]:
             flags |= Qt.ItemFlag.ItemIsUserCheckable
         return flags
 
@@ -62,7 +62,7 @@ class DETableModel(QAbstractTableModel):
         if not index.isValid():
             return False
         row, col = index.row(), index.column()
-        if col in [5, 6]:
+        if col in [3, 8, 9]:
             if role == Qt.ItemDataRole.CheckStateRole:
                 self._data[row][col] = (value == Qt.CheckState.Checked)
                 self.dataChanged.emit(index, index)
@@ -70,32 +70,32 @@ class DETableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.EditRole:
             if col == 1 and value in self.parser_types:
                 self._data[row][col] = value
-            elif col in [2, 3, 4]:
+            elif col in [0, 2, 5, 6]:
                 self._data[row][col] = value
-            elif col == 7:
+            elif col == 10:
                 try:
                     ivalue = int(value)
                     self._data[row][col] = ivalue
                 except ValueError:
                     return False
-            elif col == 8:
+            elif col in [4, 7, 11]:
                 try:
                     fvalue = float(value)
                     self._data[row][col] = fvalue
                 except ValueError:
                     return False
-            elif col == 0:
-                self._data[row][col] = value
             else:
                 self._data[row][col] = value
             self.dataChanged.emit(index, index)
             return True
         return False
 
-    def addRow(self, section_name="NewSection", type="dxf", file_path="", position_file_path="",
-               depth="[0]", hole=False, debug=False, grid_size=0, min_spacing=0.0):
+    def addRow(self, section_name="NewSection", parser_type="dxf", file_path="",
+               remove_colinear=False, simplify_tolerance=0.0, coords="[]", depth="[]", scale=1.0,
+               hole=False, debug=False, grid_size=0, min_spacing=0.0):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        new_row = [section_name, type, file_path, position_file_path, depth, hole, debug, grid_size, min_spacing]
+        new_row = [section_name, parser_type, file_path, remove_colinear, simplify_tolerance,
+                   coords, depth, scale, hole, debug, grid_size, min_spacing]
         self._data.append(new_row)
         self.endInsertRows()
 
@@ -117,7 +117,7 @@ class DEDelegate(QStyledItemDelegate):
             combo = QComboBox(parent)
             combo.addItems(model.parser_types)
             return combo
-        if col in [2, 3]:
+        if col == 2:
             editor_widget = QWidget(parent)
             layout = QHBoxLayout(editor_widget)
             layout.setContentsMargins(0, 0, 0, 0)
@@ -133,21 +133,19 @@ class DEDelegate(QStyledItemDelegate):
             layout.setStretch(1, 0)
             button.clicked.connect(lambda: self.open_file_dialog(line_edit, index))
             return editor_widget
-        if col == 4:
-            return QLineEdit(parent)
-        if col in [5, 6]:
+        if col in [3, 8, 9]:
             return None
-        if col == 7:
-            spin = QSpinBox(parent)
-            spin.setMinimum(0)
-            spin.setMaximum(1000000)
-            return spin
-        if col == 8:
+        if col in [4, 7, 11]:
             double_spin = QDoubleSpinBox(parent)
             double_spin.setDecimals(3)
             double_spin.setMinimum(0.0)
             double_spin.setMaximum(1e9)
             return double_spin
+        if col == 10:
+            spin = QSpinBox(parent)
+            spin.setMinimum(0)
+            spin.setMaximum(1000000)
+            return spin
         return super().createEditor(parent, option, index)
 
     def open_file_dialog(self, line_edit, index):
@@ -170,15 +168,15 @@ class DEDelegate(QStyledItemDelegate):
             idx = editor.findText(value)
             if idx >= 0:
                 editor.setCurrentIndex(idx)
-        elif col in [2, 3] and isinstance(editor, QWidget):
+        elif col == 2 and isinstance(editor, QWidget):
             line_edit = editor.findChild(QLineEdit)
             if line_edit:
                 line_edit.setText(str(value) if value else "")
-        elif col == 4 and isinstance(editor, QLineEdit):
+        elif col in [5, 6] and isinstance(editor, QLineEdit):
             editor.setText(str(value) if value else "")
-        elif col == 7 and isinstance(editor, QSpinBox):
+        elif col == 10 and isinstance(editor, QSpinBox):
             editor.setValue(int(value) if value else 0)
-        elif col == 8 and isinstance(editor, QDoubleSpinBox):
+        elif col in [4, 7, 11] and isinstance(editor, QDoubleSpinBox):
             editor.setValue(float(value) if value else 0.0)
         else:
             super().setEditorData(editor, index)
@@ -189,22 +187,22 @@ class DEDelegate(QStyledItemDelegate):
             model.setData(index, editor.text(), Qt.ItemDataRole.EditRole)
         elif col == 1 and isinstance(editor, QComboBox):
             model.setData(index, editor.currentText(), Qt.ItemDataRole.EditRole)
-        elif col in [2, 3] and isinstance(editor, QWidget):
+        elif col == 2 and isinstance(editor, QWidget):
             line_edit = editor.findChild(QLineEdit)
             if line_edit:
                 model.setData(index, line_edit.text(), Qt.ItemDataRole.EditRole)
-        elif col == 4 and isinstance(editor, QLineEdit):
+        elif col in [5, 6] and isinstance(editor, QLineEdit):
             model.setData(index, editor.text(), Qt.ItemDataRole.EditRole)
-        elif col == 7 and isinstance(editor, QSpinBox):
+        elif col == 10 and isinstance(editor, QSpinBox):
             model.setData(index, editor.value(), Qt.ItemDataRole.EditRole)
-        elif col == 8 and isinstance(editor, QDoubleSpinBox):
+        elif col in [4, 7, 11] and isinstance(editor, QDoubleSpinBox):
             model.setData(index, editor.value(), Qt.ItemDataRole.EditRole)
         else:
             super().setModelData(editor, model, index)
 
     def editorEvent(self, event, model, option, index):
         col = index.column()
-        if col in [5, 6]:
+        if col in [3, 8, 9]:
             if event.type() == event.Type.MouseButtonRelease:
                 current = model.data(index, Qt.ItemDataRole.CheckStateRole)
                 new_val = Qt.CheckState.Unchecked if current == Qt.CheckState.Checked else Qt.CheckState.Checked
@@ -248,10 +246,10 @@ class DEWindow(QWidget):
         layout.addWidget(self.table)
         self.load_toml_to_table(self.local_config)
         self.button_layout = QHBoxLayout()
-        self.add_button = QPushButton("Add Documentation Entry")
-        self.remove_button = QPushButton("Remove Documentation Entry")
-        self.save_button = QPushButton("Save Documentation Entries")
-        self.close_button = QPushButton("Close Editor")
+        self.add_button = QPushButton("Add entry")
+        self.remove_button = QPushButton("Remove entry")
+        self.save_button = QPushButton("Save entries")
+        self.close_button = QPushButton("Close editor")
         self.add_button.clicked.connect(self.add_section)
         self.remove_button.clicked.connect(self.remove_section)
         self.save_button.clicked.connect(self.save_config)
@@ -276,6 +274,8 @@ class DEWindow(QWidget):
                 section_name,
                 values.get('parser_type', 'dxf'),
                 values.get('path', ''),
+                values.get('remove_colinear', False),
+                values.get('simplify_tolerance', 0.0),
                 str(values.get('coords', '[]')),
                 str(values.get('depth', '[]')),
                 values.get('scale', 1.0),
@@ -327,13 +327,15 @@ class DEWindow(QWidget):
             new_config[section_name] = {
                 'parser_type': row[1],
                 'path': row[2],
-                'coords': eval(row[3]) if row[3] else [0],
-                'depth': eval(row[4]) if row[4] else [0],
-                'scale': row[5],
-                'hole': row[6],
-                'debug': row[7],
-                'grid_size': row[8],
-                'min_spacing': row[9]
+                'remove_colinear': row[3],
+                'simplify_tolerance': row[4],
+                'coords': eval(row[5]) if row[5] else [0],
+                'depth': eval(row[6]) if row[6] else [0],
+                'scale': row[7],
+                'hole': row[8],
+                'debug': row[9],
+                'grid_size': row[10],
+                'min_spacing': row[11]
             }
         self.local_config.update(new_config)
         with open(self.config_path, 'w') as file:

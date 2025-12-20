@@ -3,7 +3,7 @@
 - [x] Front end
     - [x] Extractor
         - [x] .dxf
-        - [ ] image
+        - [x] image
         - [ ] GIS data
     - [x] Separator
         - [x] polygon creation
