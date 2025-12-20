@@ -9,6 +9,7 @@ This file contains all the necessary information for the parser to be able to pa
 [name_of_the_table]
     parser_type = "dxf" # dxf, image and GIS values are supported
     path = "dxf/two_rectangles_no_dimensions.dxf" # path to the file
+    flip_y = false # flip by Y axis, used only by image extractor
     remove_colinear = false # merge colinear points in a polygon, used only by image extractor
     simplify_tolerance = 0.0 # threshold value controlling the level of simplification, used only by image extractor
     coords = [

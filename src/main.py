@@ -32,6 +32,7 @@ def parse_section(parsed_toml, section_name):
         case "image":
             extractor = Image(parsed_toml[section_name]['path'],
                               parsed_toml[section_name]['debug'],
+                              parsed_toml[section_name]['flip_y'],
                               parsed_toml[section_name]['simplify_tolerance'],
                               parsed_toml[section_name]['remove_colinear'])
 

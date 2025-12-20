@@ -3,6 +3,7 @@
 [hole]
     parser_type = "image"
     path = "image/arcs_no_dimensions.png"
+    flip_y = true
     remove_colinear = false
     simplify_tolerance = 0.0
     coords = []
@@ -16,6 +17,7 @@
 [dump]
     parser_type = "image"
     path = "image/two_rectangles_no_dimensions.png"
+    flip_y = true
     remove_colinear = true
     simplify_tolerance = 0.0
     # coords = [
