@@ -10,19 +10,17 @@ from shapely.geometry import LineString, MultiPolygon, Polygon
 
 class Separator:
     """
-        Create a polygon from Shapely elements
-        and divide them into smaller divisions/cells.
+        Create a polygon from Shapely elements and divide them into smaller divisions/cells.
 
-        Attributes:
-            elements(list): Shapely elements
-            debug: is debug mode on
-            grid_size: size of the grid
-            min_spacing: minimum spacing between two lines in a grid
+        :param list elements: Shapely elements
+        :param bool debug: is debug mode on
+        :param int grid_size: size of the grid
+        :param float min_spacing: minimum spacing between two lines in a grid
     """
 
     def __init__(self, elements, debug, grid_size, min_spacing):
         """
-            Initialize all the variables.
+            Initialize variables.
         """
 
         self.elements = elements
@@ -43,6 +41,10 @@ class Separator:
         self.min_spacing = min_spacing
 
     def execute(self):
+        """
+            Separate and divide.
+        """
+
         self.create_polygons()
 
         if len(self.polygons) != 0:
@@ -54,8 +56,7 @@ class Separator:
 
     def create_divisions(self):
         """
-            Divide polygons by adding division lines into
-            the `divisions` variable.
+            Divide polygons by adding division lines into the `divisions` variable.
 
             Steps:
                 1) add regular grid lines every `grid_size`,
@@ -136,8 +137,8 @@ class Separator:
         """
             INTERNAL FUNCTION!
 
-            Build an adjacency list mapping each endpoint to connected lines
-            and their opposite endpoints.
+            Build an adjacency list mapping each endpoint to connected lines and
+            their opposite endpoints.
         """
 
         adj = defaultdict(list)
@@ -169,8 +170,7 @@ class Separator:
         """
             INTERNAL FUNCTION!
 
-            Find all closed, non intersecting polygons in array of
-            `LineString` objects.
+            Find all closed, non intersecting polygons in array of `LineString` objects.
         """
 
         # Ensure lines are LineStrings
@@ -220,6 +220,7 @@ class Separator:
 
             Convert `LineString` objects into segments.
         """
+
         segments = []
         for line in lines:
             coords = list(line.coords)

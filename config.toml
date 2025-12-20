@@ -1,8 +1,10 @@
 # General config file for project documentation parser
 
 [hole]
-    parser_type = "dxf"
-    path = "dxf/circle_dimensions.dxf"
+    parser_type = "image"
+    path = "image/arcs_no_dimensions.png"
+    remove_colinear = false
+    simplify_tolerance = 0.0
     coords = []
     depth = [100]
     scale = 1.0
@@ -12,20 +14,23 @@
     min_spacing = 10.0
 
 [dump]
-    parser_type = "dxf"
-    path = "dxf/two_rectangles_no_dimensions.dxf"
-    coords = [
-        [
-            [-100.0, 0.0],
-            [0.0, 0.0],
-            [0.0, 100.0],
-        ],
-        [
-            [200.0, -100.0],
-            [300.0, -100.0],
-            [300.0, 0.0],
-        ]
-    ]
+    parser_type = "image"
+    path = "image/two_rectangles_no_dimensions.png"
+    remove_colinear = true
+    simplify_tolerance = 0.0
+    # coords = [
+    #     [
+    #         [-100.0, 0.0],
+    #         [0.0, 0.0],
+    #         [0.0, 100.0],
+    #     ],
+    #     [
+    #         [200.0, -100.0],
+    #         [300.0, -100.0],
+    #         [300.0, 0.0],
+    #     ]
+    # ]
+    coords = []
     depth = []
     scale = 2.0
     hole = false

@@ -10,15 +10,17 @@ import toml
 
 from embedder.embedder import *
 from extractor.dxf import *
-from extractor.image import *
 from extractor.gis import *
+from extractor.image import *
 from positioner.positioner import *
 from separator.separator import *
 
 def parse_section(parsed_toml, section_name):
     """
-        Parse (run extractor, separator, positioner and embedder) a
-        TOML section.
+        Parse (run extractor, separator, positioner and embedder) a TOML section.
+        
+        :param dict parsed_toml: parsed contents of the TOML file
+        :param str section_name: name of the section to be parsed 
     """
 
     extractor = None
@@ -28,7 +30,10 @@ def parse_section(parsed_toml, section_name):
             extractor = DXF(parsed_toml[section_name]['path'])
 
         case "image":
-            extractor = Image(parsed_toml[section_name]['path'])
+            extractor = Image(parsed_toml[section_name]['path'],
+                              parsed_toml[section_name]['debug'],
+                              parsed_toml[section_name]['simplify_tolerance'],
+                              parsed_toml[section_name]['remove_colinear'])
 
         case "GIS":
             extractor = GIS(parsed_toml[section_name]['path'])
@@ -40,14 +45,14 @@ def parse_section(parsed_toml, section_name):
         extractor.extract_entities()
         elements = extractor.get_elements()
 
-        separator = Separator(elements, parsed_toml[section_name]['debug'], 
-                              parsed_toml[section_name]['grid_size'], 
+        separator = Separator(elements, parsed_toml[section_name]['debug'],
+                              parsed_toml[section_name]['grid_size'],
                               parsed_toml[section_name]['min_spacing'])
         separator.execute()
         polygons, grids = separator.get_shapes()
 
         positioner = Positioner(parsed_toml[section_name]['coords'],
-                                parsed_toml[section_name]['depth'], 
+                                parsed_toml[section_name]['depth'],
                                 parsed_toml[section_name]['scale'],
                                 polygons, grids)
         positioner.execute()

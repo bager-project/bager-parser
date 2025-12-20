@@ -11,16 +11,14 @@ from shapely.geometry import LineString, Point, Polygon
 
 class DXF:
     """
-        Extract .dxf entities and convert them into
-        a Shapely element.
-
-        Attributes:
-        path(str): path to the .dxf file
+        Extract .dxf entities and convert them into Shapely elements.
+        
+        :param str path: path to the .dxf file
     """
 
     def __init__(self, path):
         """
-            Initialize all the variables.
+            Initialize variables.
         """
 
         self.path = path
@@ -36,6 +34,10 @@ class DXF:
         self.modelspace = self.doc.modelspace()
 
     def execute(self):
+        """
+            Extract.
+        """
+
         self.extract_entities()
 
     ###########################################################################
@@ -44,8 +46,7 @@ class DXF:
 
     def extract_entities(self):
         """
-            Extract .dxf entities and convert them to
-            Shapely geometry.
+            Extract .dxf entities and convert them into Shapely geometry.
         """
 
         for entity in self.modelspace:
@@ -143,7 +144,7 @@ class DXF:
         """
             INTERNAL FUNCTION!
 
-            Convert .dxf ELLIPSE entity into a Shapely Polygon.
+            Convert a .dxf ELLIPSE entity into a Shapely Polygon.
         """
         
         # Parametric equations for an ellipse

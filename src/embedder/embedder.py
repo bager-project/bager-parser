@@ -10,19 +10,18 @@ from shapely.ops import split
 
 class Embedder:
     """
-        Embed divided polygons into a file which will be
+        Embed divided polygons into a file which will is going to be
         passed to the Raspberry Pi Pico.
 
-        Attributes:
-            polygons(list): list of polygons
-            divisions(list): list of lines (divisions) FOR EACH polygon
-            parsed_toml(dict): parsed TOML file
-            section_name(str): name of the current TOML section / table we are parsing
+        :param list polygons: list of polygons
+        :param list divisions: list of lines (divisions) FOR EACH polygon
+        :param dict parsed_toml: parsed TOML file
+        :param str section_name: name of the current TOML section / table we are parsing
     """
 
     def __init__(self, polygons, divisions, parsed_toml, section_name):
         """
-            Initialize all the variables.
+            Initialize variables.
         """
 
         self.polygons = polygons
@@ -85,6 +84,7 @@ class Embedder:
             Split all polygons in `self.polygons`
             into smaller polygons based on LineString divisions.
         """
+
         for polygon, division in zip(self.polygons, self.divisions):
             for i in range(len(division)):
                 division[i] = self.extend_line(division[i], polygon.bounds)
@@ -128,8 +128,7 @@ class Embedder:
         """
             INTERNAL FUNCTION!
 
-            Split a polygon into smaller polygons based
-            on LineString divisions.
+            Split a polygon into smaller polygons based on LineString divisions.
         """
 
         result = [polygon]

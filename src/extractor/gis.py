@@ -5,23 +5,25 @@
 
 class GIS:
     """
-        Extract .GIS entities and convert them into
-        a Shapely elements.
+        Extract GIS entities and convert them into Shapely elements.
 
-        Attributes:
-        path(str): path to the GIS file
+        :param str path: path to the GIS file
     """
-        
+
     def __init__(self, path):
         """
-            Initialize all the variables.
+            Initialize variables.
         """
 
         self.path = path
         self.elements = []
 
     def execute(self):
-        pass
+        """
+            Extract.
+        """
+
+        self.extract_entities()
 
     ###########################################################################
     #####                                                                 #####
@@ -29,8 +31,7 @@ class GIS:
 
     def extract_entities(self):
         """
-            Extract .GIS entities and convert them to
-            Shapely geometry.
+            Extract GIS entities and convert them into Shapely geometry.
         """
 
         pass

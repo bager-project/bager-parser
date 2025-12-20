@@ -12,17 +12,16 @@ class Positioner:
         Transform coordinates of polygons and divisions into a set
         of coordinates from `position.toml` file.
 
-        Attributes:
-            coords(list): list of new coordinates
-            depth_array(str): list defining depth for each polygon
-            scale(float): scale coefficient for all polygons
-            polygons(list): list of polygons
-            divisions(list): list of lines (divisions) FOR EACH polygon
+        :param list coords: list of new coordinates
+        :param list depth_array: list defining depth for each polygon
+        :param float scale: scale coefficient for all polygons
+        :param list polygons: list of polygons
+        :param list divisions: list of lines (divisions) FOR EACH polygon
     """
 
     def __init__(self, coords, depth_array, scale, polygons, divisions):
         """
-            Initialize all the variables.
+            Initialize variables.
         """
 
         self.coords = coords
