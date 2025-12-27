@@ -1,4 +1,4 @@
-# AUTHOR NotNekodev
+# AUTHOR NotNekodev, Andrej Bartulin
 # PROJECT: B.A.G.E.R. parser
 # LICENSE: Polyform Shield License 1.0.0
 # DESCRIPTION: Documentation editor window
@@ -13,12 +13,28 @@ from PyQt6.QtWidgets import (
 )
 import toml
 
+def indexes_by_value_type(d: dict, target_type: type):
+    return [i for i, v in enumerate(d.values()) if v is target_type]
+
+# THIS IS GETTING UPDATED
+config_table = {
+    "Section Name": str,
+    "Parser Type": list,
+    "File Path": str,
+    "Flip Y": bool,
+    "Remove colinear": bool,
+    "Simplify tolerance": float,
+    "Coords": str,
+    "Depth": str,
+    "Scale": float,
+    "Hole": bool,
+    "Debug": bool,
+    "Grid Size": int,
+    "Min Spacing": float,
+}
+
 class DETableModel(QAbstractTableModel):
-    headers = [
-        "Section Name", "Parser Type", "File Path", "Flip Y", "Remove colinear",
-        "Simplify tolerance", "Coords", "Depth", "Scale", "Hole", "Debug", "Grid Size",
-        "Min Spacing"
-    ]
+    headers = list(config_table.keys())
     parser_types = ["dxf", "image", "GIS"]
 
     def __init__(self, parent=None):
@@ -55,7 +71,7 @@ class DETableModel(QAbstractTableModel):
             return Qt.ItemFlag.NoItemFlags
         col = index.column()
         flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
-        if col in [3, 4, 9, 10]:
+        if col in indexes_by_value_type(config_table, bool):
             flags |= Qt.ItemFlag.ItemIsUserCheckable
         return flags
 
@@ -63,23 +79,23 @@ class DETableModel(QAbstractTableModel):
         if not index.isValid():
             return False
         row, col = index.row(), index.column()
-        if col in [3, 4, 9, 10]:
+        if col in indexes_by_value_type(config_table, bool):
             if role == Qt.ItemDataRole.CheckStateRole:
                 self._data[row][col] = (value == Qt.CheckState.Checked)
                 self.dataChanged.emit(index, index)
                 return True
         if role == Qt.ItemDataRole.EditRole:
-            if col == 1 and value in self.parser_types:
+            if col in indexes_by_value_type(config_table, list) and value in self.parser_types:
                 self._data[row][col] = value
-            elif col in [0, 2, 6, 7]:
+            elif col in indexes_by_value_type(config_table, str):
                 self._data[row][col] = value
-            elif col == 11:
+            elif col in indexes_by_value_type(config_table, int):
                 try:
                     ivalue = int(value)
                     self._data[row][col] = ivalue
                 except ValueError:
                     return False
-            elif col in [5, 8, 12]:
+            elif col in indexes_by_value_type(config_table, float):
                 try:
                     fvalue = float(value)
                     self._data[row][col] = fvalue
@@ -91,6 +107,7 @@ class DETableModel(QAbstractTableModel):
             return True
         return False
 
+    # THIS IS GETTING UPDATED
     def addRow(self, section_name="NewSection", parser_type="dxf", file_path="",
                flip_y=False, remove_colinear=False, simplify_tolerance=0.0, coords="[]", depth="[]", scale=1.0,
                hole=False, debug=False, grid_size=0, min_spacing=0.0):
@@ -134,15 +151,15 @@ class DEDelegate(QStyledItemDelegate):
             layout.setStretch(1, 0)
             button.clicked.connect(lambda: self.open_file_dialog(line_edit, index))
             return editor_widget
-        if col in [3, 4, 9, 10]:
+        if col in indexes_by_value_type(config_table, bool):
             return None
-        if col in [5, 8, 12]:
+        if col in indexes_by_value_type(config_table, float):
             double_spin = QDoubleSpinBox(parent)
             double_spin.setDecimals(3)
             double_spin.setMinimum(0.0)
             double_spin.setMaximum(1e9)
             return double_spin
-        if col == 11:
+        if col in indexes_by_value_type(config_table, int):
             spin = QSpinBox(parent)
             spin.setMinimum(0)
             spin.setMaximum(1000000)
@@ -173,11 +190,11 @@ class DEDelegate(QStyledItemDelegate):
             line_edit = editor.findChild(QLineEdit)
             if line_edit:
                 line_edit.setText(str(value) if value else "")
-        elif col in [6, 7] and isinstance(editor, QLineEdit):
+        elif col in indexes_by_value_type(config_table, str) and isinstance(editor, QLineEdit):
             editor.setText(str(value) if value else "")
-        elif col == 11 and isinstance(editor, QSpinBox):
+        elif col in indexes_by_value_type(config_table, int) and isinstance(editor, QSpinBox):
             editor.setValue(int(value) if value else 0)
-        elif col in [5, 8, 12] and isinstance(editor, QDoubleSpinBox):
+        elif col in indexes_by_value_type(config_table, float) and isinstance(editor, QDoubleSpinBox):
             editor.setValue(float(value) if value else 0.0)
         else:
             super().setEditorData(editor, index)
@@ -192,18 +209,18 @@ class DEDelegate(QStyledItemDelegate):
             line_edit = editor.findChild(QLineEdit)
             if line_edit:
                 model.setData(index, line_edit.text(), Qt.ItemDataRole.EditRole)
-        elif col in [6, 7] and isinstance(editor, QLineEdit):
+        elif col in indexes_by_value_type(config_table, str) and isinstance(editor, QLineEdit):
             model.setData(index, editor.text(), Qt.ItemDataRole.EditRole)
-        elif col == 11 and isinstance(editor, QSpinBox):
+        elif col in indexes_by_value_type(config_table, int) and isinstance(editor, QSpinBox):
             model.setData(index, editor.value(), Qt.ItemDataRole.EditRole)
-        elif col in [5, 8, 12] and isinstance(editor, QDoubleSpinBox):
+        elif col in indexes_by_value_type(config_table, float) and isinstance(editor, QDoubleSpinBox):
             model.setData(index, editor.value(), Qt.ItemDataRole.EditRole)
         else:
             super().setModelData(editor, model, index)
 
     def editorEvent(self, event, model, option, index):
         col = index.column()
-        if col in [3, 4, 9, 10]:
+        if col in indexes_by_value_type(config_table, bool):
             if event.type() == event.Type.MouseButtonRelease:
                 current = model.data(index, Qt.ItemDataRole.CheckStateRole)
                 new_val = Qt.CheckState.Unchecked if current == Qt.CheckState.Checked else Qt.CheckState.Checked
@@ -269,6 +286,7 @@ class DEWindow(QWidget):
         self.model.removeRow(self.table.currentIndex().row())
         self.changed_config = True
 
+    # THIS IS GETTING UPDATED
     def load_toml_to_table(self, parsed_toml):
         for section_name, values in parsed_toml.items():
             row_data = [
@@ -290,6 +308,7 @@ class DEWindow(QWidget):
             self.model._data.append(row_data)
             self.model.endInsertRows()
 
+    # THIS IS GETTING UPDATED
     def save_config(self):
         if not self.config_path:
             msg_box = QMessageBox()
