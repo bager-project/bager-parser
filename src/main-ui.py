@@ -5,6 +5,7 @@
 
 import colorama
 import os
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,QLabel, QMessageBox, QPushButton,
     QSizePolicy,QVBoxLayout, QWidget
@@ -106,6 +107,7 @@ class MainWindow(QWidget):
         self.title = QLabel("B.A.G.E.R. parser")
         self.title.setStyleSheet("font-size: 48px; font-weight: bold; color: #333;")
         self.title.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.title)
 
         self.run_parser_button = QPushButton("Run B.A.G.E.R. parser")
